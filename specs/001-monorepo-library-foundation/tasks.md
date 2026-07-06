@@ -62,18 +62,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Write unit tests for PostgreSQL error mapper in `libs/libs-sql/tests/sql-error.mapper.spec.ts`
-- [ ] T013 [P] [US1] Write unit tests for dynamic module connection factories in `libs/libs-sql/tests/sql-module.spec.ts`
+- [X] T012 [P] [US1] Write unit tests for PostgreSQL error mapper in `libs/libs-sql/tests/sql-error.mapper.spec.ts`
+- [X] T013 [P] [US1] Write unit tests for dynamic module connection factories in `libs/libs-sql/tests/sql-module.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Define `BaseEntity` TypeORM schema decorator and default columns in `libs/libs-sql/src/base.entity.ts` (depends on T006)
-- [ ] T015 [P] [US1] Implement standard pagination builder in `libs/libs-sql/src/pagination.ts`
-- [ ] T016 [P] [US1] Implement generic `BaseRepository` mapping TypeORM operations in `libs/libs-sql/src/base.repository.ts` (depends on T014, T015)
-- [ ] T017 [P] [US1] Implement context-aware `TransactionService` and `UnitOfWork` propagation in `libs/libs-sql/src/transaction.service.ts` and `libs/libs-sql/src/unit-of-work.service.ts` (depends on T007)
-- [ ] T018 [P] [US1] Implement `SqlHealthService` mapping PostgreSQL connection status in `libs/libs-sql/src/sql-health.service.ts` (depends on T010)
-- [ ] T019 [P] [US1] Implement PostgreSQL driver error mapper mapping database errors in `libs/libs-sql/src/sql-error.mapper.ts` (depends on T005)
-- [ ] T020 [US1] Wire up dynamic `SqlModule` with sync/async providers in `libs/libs-sql/src/sql.module.ts` (depends on T004)
+- [X] T014 [P] [US1] Define `BaseEntity` TypeORM schema decorator and default columns in `libs/libs-sql/src/base.entity.ts` (depends on T006)
+- [X] T015 [P] [US1] Implement standard pagination builder in `libs/libs-sql/src/pagination.ts`
+- [X] T016 [P] [US1] Implement generic `BaseRepository` mapping TypeORM operations in `libs/libs-sql/src/base.repository.ts` (depends on T014, T015)
+- [X] T017 [P] [US1] Implement context-aware `TransactionService` and `UnitOfWork` propagation in `libs/libs-sql/src/transaction.service.ts` and `libs/libs-sql/src/unit-of-work.service.ts` (depends on T007)
+- [X] T018 [P] [US1] Implement `SqlHealthService` mapping PostgreSQL connection status in `libs/libs-sql/src/sql-health.service.ts` (depends on T010)
+- [X] T019 [P] [US1] Implement PostgreSQL driver error mapper mapping database errors in `libs/libs-sql/src/sql-error.mapper.ts` (depends on T005)
+- [X] T020 [US1] Wire up dynamic `SqlModule` with sync/async providers in `libs/libs-sql/src/sql.module.ts` (depends on T004)
 
 **Checkpoint**: At this point, User Story 1 is fully functional and testable independently.
 
