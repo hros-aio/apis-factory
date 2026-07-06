@@ -5,29 +5,31 @@ import {
   DeleteDateColumn,
   Column,
   VersionColumn,
+  Index,
 } from 'typeorm';
 
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
-  @Column({ name: 'tenant_code', type: 'varchar', length: 64, index: true })
-  tenantCode: string;
+  @Index()
+  @Column({ name: 'tenant_code', type: 'varchar', length: 64 })
+  tenantCode!: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
   deletedAt?: Date;
 
   @Column({ name: 'is_deleted', type: 'boolean', default: false })
-  isDeleted: boolean;
+  isDeleted!: boolean;
 
   @VersionColumn({ default: 1 })
-  version: number;
+  version!: number;
 
   @Column({ name: 'created_by', type: 'varchar', length: 128, nullable: true })
   createdBy?: string;

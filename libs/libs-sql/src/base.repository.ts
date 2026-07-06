@@ -36,7 +36,7 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
       updatedBy: user?.userId || undefined,
     } as any);
 
-    return this.repository.save(entity);
+    return this.repository.save(entity as any) as unknown as Promise<Entity>;
   }
 
   async findById(id: string): Promise<Entity | null> {
@@ -74,9 +74,9 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
     const updated = this.repository.merge(existing, {
       ...entityData,
       updatedBy: user?.userId || undefined,
-    });
+    } as any);
 
-    return this.repository.save(updated);
+    return this.repository.save(updated as any) as unknown as Promise<Entity>;
   }
 
   async delete(id: string): Promise<void> {
