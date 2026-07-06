@@ -41,14 +41,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Implement strongly typed configuration helper modules and base factory schemas in `libs/libs-core/src/configuration/`
-- [ ] T005 [P] Create custom core exception classes hierarchy in `libs/libs-core/src/exceptions/`
-- [ ] T006 [P] Define core context interfaces (`RequestContext`, `AuthContext`) in `libs/libs-core/src/interfaces/`
-- [ ] T007 [P] Implement `RequestContextService` using Node.js `AsyncLocalStorage` in `libs/libs-core/src/request-context/`
-- [ ] T008 [P] Implement abstract `CacheProvider` interface and memory/mock cache providers in `libs/libs-core/src/cache/`
-- [ ] T009 [P] Implement `LoggerService` and `TraceService` base abstract classes and default logging provider in `libs/libs-core/src/logger/` and `libs/libs-core/src/tracing/`
-- [ ] T010 [P] Implement abstract `HealthService` registry and `HealthIndicator` interfaces in `libs/libs-core/src/health/`
-- [ ] T011 Write unit tests verifying context isolation in `libs/libs-core/tests/request-context.spec.ts` (depends on T007)
+- [X] T004 Implement strongly typed configuration helper modules and base factory schemas in `libs/libs-core/src/configuration/`
+- [X] T005 [P] Create custom core exception classes hierarchy in `libs/libs-core/src/exceptions/`
+- [X] T006 [P] Define core context interfaces (`RequestContext`, `AuthContext`) in `libs/libs-core/src/interfaces/`
+- [X] T007 [P] Implement `RequestContextService` using Node.js `AsyncLocalStorage` in `libs/libs-core/src/request-context/`
+- [X] T008 [P] Implement abstract `CacheProvider` interface and memory/mock cache providers in `libs/libs-core/src/cache/`
+- [X] T009 [P] Implement `LoggerService` and `TraceService` base abstract classes and default logging provider in `libs/libs-core/src/logger/` and `libs/libs-core/src/tracing/`
+- [X] T010 [P] Implement abstract `HealthService` registry and `HealthIndicator` interfaces in `libs/libs-core/src/health/`
+- [X] T011 Write unit tests verifying context isolation in `libs/libs-core/tests/request-context.spec.ts` (depends on T007)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
