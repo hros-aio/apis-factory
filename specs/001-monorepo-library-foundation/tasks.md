@@ -87,19 +87,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T021 [P] [US3] Write unit tests for the JWT authentication middleware and guards in `libs/libs-apis/tests/auth.guard.spec.ts`
-- [ ] T022 [P] [US3] Write unit tests for correlation trace mapping in `libs/libs-apis/tests/trace.middleware.spec.ts`
+- [X] T021 [P] [US3] Write unit tests for the JWT authentication middleware and guards in `libs/libs-apis/tests/auth.guard.spec.ts`
+- [X] T022 [P] [US3] Write unit tests for correlation trace mapping in `libs/libs-apis/tests/trace.middleware.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T023 [P] [US3] Implement `TraceMiddleware` and `RequestLogMiddleware` logging metadata in `libs/libs-apis/src/middleware/` (depends on T009)
-- [ ] T024 [P] [US3] Implement decorators (`@CurrentUser`, `@TenantCode`, `@RequirePermission`, `@Public`, `@TraceId`) in `libs/libs-apis/src/decorators/` (depends on T007)
-- [ ] T025 [P] [US3] Implement pluggable `AuthenticationStrategy` contract and built-in default guard in `libs/libs-apis/src/guards/auth.guard.ts` (depends on T006)
-- [ ] T026 [P] [US3] Implement `PermissionGuard` and `RateLimitGuard` verifying context in `libs/libs-apis/src/guards/` (depends on T008, T025)
-- [ ] T027 [P] [US3] Implement global HTTP exception filter formatting responses in `libs/libs-apis/src/filters/exception.filter.ts` (depends on T005)
-- [ ] T028 [P] [US3] Implement reusable Interceptors (`LoggingInterceptor`, `AuditInterceptor`, `TimeoutInterceptor`, `MetricsInterceptor`) in `libs/libs-apis/src/interceptors/` (depends on T007)
-- [ ] T029 [P] [US3] Implement reusable validation and sanitization Pipes (`ValidationPipe`, `TrimPipe`, `SanitizePipe`) in `libs/libs-apis/src/pipes/`
-- [ ] T030 [US3] Wire up `ApisModule` registering global filters and guards in `libs/libs-apis/src/apis.module.ts` (depends on T004)
+- [X] T023 [P] [US3] Implement `TraceMiddleware` and `RequestLogMiddleware` logging metadata in `libs/libs-apis/src/middleware/` (depends on T009)
+- [X] T024 [P] [US3] Implement decorators (`@CurrentUser`, `@TenantCode`, `@RequirePermission`, `@Public`, `@TraceId`) in `libs/libs-apis/src/decorators/` (depends on T007)
+- [X] T025 [P] [US3] Implement pluggable `AuthenticationStrategy` contract and built-in default guard in `libs/libs-apis/src/guards/auth.guard.ts` (depends on T006)
+- [X] T026 [P] [US3] Implement `PermissionGuard` and `RateLimitGuard` verifying context in `libs/libs-apis/src/guards/` (depends on T008, T025)
+- [X] T027 [P] [US3] Implement global HTTP exception filter formatting responses in `libs/libs-apis/src/filters/exception.filter.ts` (depends on T005)
+- [X] T028 [P] [US3] Implement reusable Interceptors (`LoggingInterceptor`, `AuditInterceptor`, `TimeoutInterceptor`, `MetricsInterceptor`) in `libs/libs-apis/src/interceptors/` (depends on T007)
+- [X] T029 [P] [US3] Implement reusable validation and sanitization Pipes (`ValidationPipe`, `TrimPipe`, `SanitizePipe`) in `libs/libs-apis/src/pipes/`
+- [X] T030 [US3] Wire up `ApisModule` registering global filters and guards in `libs/libs-apis/src/apis.module.ts` (depends on T004)
 
 **Checkpoint**: User Story 3 features are fully integrated and testable.
 
