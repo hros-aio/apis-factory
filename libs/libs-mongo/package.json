@@ -1,0 +1,12 @@
+{
+  "name": "@new-hros/libs-mongo",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/mongoose": "^10.0.0",
+    "@new-hros/libs-core": "^1.0.0",
+    "mongoose": "^8.0.0"
+  }
+}

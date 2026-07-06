@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2022",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@new-hros/libs-core": ["libs/libs-core/src"],
+      "@new-hros/libs-sql": ["libs/libs-sql/src"],
+      "@new-hros/libs-mongo": ["libs/libs-mongo/src"],
+      "@new-hros/libs-apis": ["libs/libs-apis/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
