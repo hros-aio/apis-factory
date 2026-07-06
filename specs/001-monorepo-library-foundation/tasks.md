@@ -113,18 +113,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T031 [P] [US2] Write unit tests verifying Mongoose schema plugin operations in `libs/libs-mongo/tests/plugins.spec.ts`
-- [ ] T032 [P] [US2] Write unit tests for Mongoose module dynamic connection setup in `libs/libs-mongo/tests/mongo-module.spec.ts`
+- [X] T031 [P] [US2] Write unit tests verifying Mongoose schema plugin operations in `libs/libs-mongo/tests/plugins.spec.ts`
+- [X] T032 [P] [US2] Write unit tests for Mongoose module dynamic connection setup in `libs/libs-mongo/tests/mongo-module.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T033 [P] [US2] Implement schema plugins for automatic timestamps, tenant filter injection, optimistic locking, and soft deletes in `libs/libs-mongo/src/plugins/` (depends on T007)
-- [ ] T034 [P] [US2] Define base document schema mappings and classes in `libs/libs-mongo/src/base-mongo.document.ts`
-- [ ] T035 [P] [US2] Implement Mongoose pagination helper utility in `libs/libs-mongo/src/pagination.ts`
-- [ ] T036 [P] [US2] Implement generic `BaseMongoRepository` class mapping operations in `libs/libs-mongo/src/base-mongo.repository.ts` (depends on T033, T034, T035)
-- [ ] T037 [P] [US2] Implement `MongoHealthService` tracking MongoDB status in `libs/libs-mongo/src/mongo-health.service.ts` (depends on T010)
-- [ ] T038 [P] [US2] Implement MongoDB driver error mapper in `libs/libs-mongo/src/mongo-error.mapper.ts` (depends on T005)
-- [ ] T039 [US2] Wire up dynamic `MongoModule` registration in `libs/libs-mongo/src/mongo.module.ts` (depends on T004)
+- [X] T033 [P] [US2] Implement schema plugins for automatic timestamps, tenant filter injection, optimistic locking, and soft deletes in `libs/libs-mongo/src/plugins/` (depends on T007)
+- [X] T034 [P] [US2] Define base document schema mappings and classes in `libs/libs-mongo/src/base-mongo.document.ts`
+- [X] T035 [P] [US2] Implement Mongoose pagination helper utility in `libs/libs-mongo/src/pagination.ts`
+- [X] T036 [P] [US2] Implement generic `BaseMongoRepository` class mapping operations in `libs/libs-mongo/src/base-mongo.repository.ts` (depends on T033, T034, T035)
+- [X] T037 [P] [US2] Implement `MongoHealthService` tracking MongoDB status in `libs/libs-mongo/src/mongo-health.service.ts` (depends on T010)
+- [X] T038 [P] [US2] Implement MongoDB driver error mapper in `libs/libs-mongo/src/mongo-error.mapper.ts` (depends on T005)
+- [X] T039 [US2] Wire up dynamic `MongoModule` registration in `libs/libs-mongo/src/mongo.module.ts` (depends on T004)
 
 **Checkpoint**: At this point, Mongoose model scoping and soft deletes are fully integrated.
 
