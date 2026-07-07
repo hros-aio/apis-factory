@@ -1,12 +1,30 @@
 {
   "name": "@new-hros/libs-apis",
   "version": "1.0.0",
+  "description": "NestJS multi-tenant platform foundation - API Platform Layer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hros-aio/apis-factory.git",
+    "directory": "libs/libs-apis"
+  },
+  "bugs": {
+    "url": "https://github.com/hros-aio/apis-factory/issues"
+  },
+  "homepage": "https://github.com/hros-aio/apis-factory/tree/master/libs/libs-apis#readme",
+  "license": "MIT",
+  "author": "New HROS Team",
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",

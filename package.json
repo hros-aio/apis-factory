@@ -8,7 +8,9 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "clean": "rm -rf dist libs/*/dist tsconfig.tsbuildinfo libs/*/tsconfig.tsbuildinfo",
+    "prebuild": "npm run clean",
+    "build": "npm run build -w @new-hros/libs-core && npm run build -w @new-hros/libs-sql && npm run build -w @new-hros/libs-mongo && npm run build -w @new-hros/libs-apis",
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {

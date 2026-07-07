@@ -1,0 +1,72 @@
+name: Release Packages to NPM Registry
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run (do not publish, only simulate)'
+        type: boolean
+        default: false
+      package:
+        description: 'Package to publish (all, libs-core, libs-sql, libs-mongo, libs-apis)'
+        type: string
+        default: 'all'
+
+jobs:
+  ci-check:
+    name: Lint, Test, and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Run Build
+        run: npm run build
+
+  release:
+    name: Publish to NPM
+    needs: ci-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js with NPM Registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org/'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Libraries
+        run: npm run build
+
+      - name: Publish to NPM Registry
+        run: |
+          if [ "${{ github.event.inputs.dry-run }}" = "true" ]; then
+            node scripts/publish.js --dry-run --package="${{ github.event.inputs.package || 'all' }}"
+          else
+            node scripts/publish.js --package="${{ github.event.inputs.package || 'all' }}"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
