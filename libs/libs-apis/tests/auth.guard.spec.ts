@@ -1,12 +1,13 @@
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '../src/guards/auth.guard';
 import { AuthenticationStrategy } from '../src/guards/auth-strategy.interface';
-import { RequestContextService, RequestContext, UnauthorizedException, PermissionDeniedException } from '@new-hros/libs-core';
+import { RequestContextService, RequestContext, UnauthorizedException, PermissionDeniedException, CacheService } from '@new-hros/libs-core';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
   let reflector: jest.Mocked<Reflector>;
   let mockStrategy: jest.Mocked<AuthenticationStrategy>;
+  let mockCacheService: jest.Mocked<CacheService>;
 
   beforeEach(() => {
     reflector = {
@@ -15,7 +16,15 @@ describe('AuthGuard', () => {
     mockStrategy = {
       authenticate: jest.fn(),
     };
-    guard = new AuthGuard(reflector, mockStrategy);
+    mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+      has: jest.fn(),
+      del: jest.fn(),
+      flushAll: jest.fn(),
+      flushNamespace: jest.fn(),
+    } as any;
+    guard = new AuthGuard(reflector, mockStrategy, mockCacheService);
   });
 
   it('should bypass authentication if route is decorated as public', async () => {
@@ -31,7 +40,7 @@ describe('AuthGuard', () => {
 
   it('should authenticate token and populate request context', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockUser = {
+    const mockUserPayload = {
       userId: 'user-123',
       sessionId: 'session-456',
       tenantCode: 'tenant-abc',
@@ -39,12 +48,23 @@ describe('AuthGuard', () => {
       scopes: ['read'],
       permissions: ['users.read'],
     };
-    mockStrategy.authenticate.mockResolvedValue(mockUser);
+    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
+
+    const mockSession = {
+      user: {
+        id: 'user-123',
+        tenantCode: 'tenant-abc',
+        email: 'user@example.com',
+        roles: ['admin'],
+      },
+    };
+    mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
       headers: {
         authorization: 'Bearer valid-token',
       },
+      user: undefined as any,
     };
     const mockContext = {
       getHandler: () => {},
@@ -69,6 +89,8 @@ describe('AuthGuard', () => {
 
     expect(result).toBe(true);
     expect(mockStrategy.authenticate).toHaveBeenCalledWith('valid-token');
+    expect(mockCacheService.get).toHaveBeenCalledWith('auth:session:session-456');
+    expect(mockRequest.user).toEqual(mockSession.user);
   });
 
   it('should throw UnauthorizedException if header is missing', async () => {
@@ -85,9 +107,38 @@ describe('AuthGuard', () => {
     await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
   });
 
+  it('should throw UnauthorizedException if session is missing from cache', async () => {
+    reflector.getAllAndOverride.mockReturnValue(false);
+    const mockUserPayload = {
+      userId: 'user-123',
+      sessionId: 'session-456',
+      tenantCode: 'tenant-abc',
+      roles: [],
+      scopes: [],
+      permissions: [],
+    };
+    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
+    mockCacheService.get.mockResolvedValue(null);
+
+    const mockRequest = {
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    };
+    const mockContext = {
+      getHandler: () => {},
+      getClass: () => {},
+      switchToHttp: () => ({
+        getRequest: () => mockRequest,
+      }),
+    } as any;
+
+    await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
+  });
+
   it('should throw PermissionDeniedException if tenant boundary is violated', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockUser = {
+    const mockUserPayload = {
       userId: 'user-123',
       sessionId: 'session-456',
       tenantCode: 'tenant-xyz',
@@ -95,7 +146,17 @@ describe('AuthGuard', () => {
       scopes: [],
       permissions: [],
     };
-    mockStrategy.authenticate.mockResolvedValue(mockUser);
+    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
+
+    const mockSession = {
+      user: {
+        id: 'user-123',
+        tenantCode: 'tenant-xyz',
+        email: 'user@example.com',
+        roles: [],
+      },
+    };
+    mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
       headers: {
