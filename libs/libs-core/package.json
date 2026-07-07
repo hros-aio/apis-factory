@@ -1,12 +1,30 @@
 {
   "name": "@new-hros/libs-core",
   "version": "1.0.0",
+  "description": "NestJS multi-tenant platform foundation - Core Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hros-aio/apis-factory.git",
+    "directory": "libs/libs-core"
+  },
+  "bugs": {
+    "url": "https://github.com/hros-aio/apis-factory/issues"
+  },
+  "homepage": "https://github.com/hros-aio/apis-factory/tree/master/libs/libs-core#readme",
+  "license": "MIT",
+  "author": "New HROS Team",
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
