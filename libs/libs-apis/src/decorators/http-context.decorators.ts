@@ -1,12 +1,6 @@
 import { createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
 import { RequestContextService } from '@new-hros/libs-core';
 
-export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    return RequestContextService.getUser();
-  },
-);
-
 export const TenantCode = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     return RequestContextService.getTenantCode();

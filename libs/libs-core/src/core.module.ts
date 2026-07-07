@@ -8,6 +8,7 @@ import { ConsoleLoggerService } from './logger/console-logger.service';
 import { TraceService } from './tracing/trace.service';
 import { DefaultTraceService } from './tracing/default-trace.service';
 import { HealthService } from './health/health.service';
+import { CacheService } from './cache/cache.service';
 
 @Global()
 @Module({})
@@ -16,9 +17,18 @@ export class CoreModule {
     logger?: { level?: string };
     cache?: { store?: 'memory' | 'redis'; host?: string; port?: number };
   } = {}): DynamicModule {
-    const cacheProvider = options.cache?.store === 'redis'
-      ? new RedisCacheProvider({ host: options.cache.host, port: options.cache.port })
-      : new MemoryCacheProvider();
+    const cacheOptions = {
+      l1DefaultTtl: 60,
+      l1MaxItems: 1000,
+      redis: options.cache?.store === 'redis' ? {
+        host: options.cache.host || 'localhost',
+        port: options.cache.port || 6379,
+      } : undefined,
+    };
+
+    const l1 = new MemoryCacheProvider(cacheOptions);
+    const l2 = new RedisCacheProvider(cacheOptions);
+    const cacheProvider = new CacheService(l1, l2);
 
     const loggerProvider = new ConsoleLoggerService();
     const traceProvider = new DefaultTraceService();
