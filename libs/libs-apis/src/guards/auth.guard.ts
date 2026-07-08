@@ -1,7 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable, Inject } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import {
+  CACHE_KEY_BUILDER,
+  CacheService,
+  PermissionDeniedException,
+  RequestContextService,
+  UnauthorizedException,
+} from '@new-hros/libs-core';
+import { AuthenticatedUser } from 'src/interfaces/auth.interface';
 import { AuthenticationStrategy } from './auth-strategy.interface';
-import { RequestContextService, UnauthorizedException, PermissionDeniedException, CacheService } from '@new-hros/libs-core';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -34,20 +41,20 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Session ID is missing from token');
     }
 
-    const cacheKey = `auth:session:${authContext.sessionId}`;
-    const sessionData = await this.cacheService.get<any>(cacheKey);
+    const cacheKey = CACHE_KEY_BUILDER.session(authContext.sessionId);
+    const sessionData = await this.cacheService.get<{ user: AuthenticatedUser }>(cacheKey);
 
-    if (!sessionData) {
+    if (!sessionData || !sessionData.user) {
       throw new UnauthorizedException('Session is invalid or expired');
     }
 
     const contextTenantCode = RequestContextService.getTenantCode();
-    if (contextTenantCode && contextTenantCode !== 'default' && authContext.tenantCode !== contextTenantCode) {
+    if (authContext.tenantCode !== contextTenantCode) {
       throw new PermissionDeniedException('Tenant context boundary violation');
     }
 
     // Attach session user context to the request object
-    request.user = sessionData.user || sessionData;
+    request.user = sessionData.user;
 
     const requestCtx = RequestContextService.current();
     if (requestCtx) {

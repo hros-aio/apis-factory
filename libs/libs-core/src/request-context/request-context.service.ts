@@ -27,8 +27,4 @@ export class RequestContextService {
   static getUser(): AuthContext | null {
     return this.current()?.user || null;
   }
-
-  static getAuthContext(): AuthContext | null {
-    return this.getUser();
-  }
 }

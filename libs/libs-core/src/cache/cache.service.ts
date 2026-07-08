@@ -38,23 +38,14 @@ export class CacheService {
   }
 
   async del(key: string | string[]): Promise<void> {
-    await Promise.all([
-      this.l1.del(key),
-      this.l2.del(key),
-    ]);
+    await Promise.all([this.l1.del(key), this.l2.del(key)]);
   }
 
   async flushAll(): Promise<void> {
-    await Promise.all([
-      this.l1.flushAll(),
-      this.l2.flushAll(),
-    ]);
+    await Promise.all([this.l1.flushAll(), this.l2.flushAll()]);
   }
 
   async flushNamespace(pattern: string): Promise<void> {
-    await Promise.all([
-      this.l1.flushNamespace(pattern),
-      this.l2.flushNamespace(pattern),
-    ]);
+    await Promise.all([this.l1.flushNamespace(pattern), this.l2.flushNamespace(pattern)]);
   }
 }
