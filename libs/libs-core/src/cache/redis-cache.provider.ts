@@ -1,13 +1,14 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
-import { ICacheProvider } from './interfaces/cache-provider.interface';
+import { CACHE_MODULE_OPTIONS_TOKEN } from './cache.constants';
 import { CacheModuleOptions } from './interfaces/cache-options.interface';
+import { ICacheProvider } from './interfaces/cache-provider.interface';
 
 @Injectable()
 export class RedisCacheProvider implements ICacheProvider {
   private readonly client: Redis | null = null;
 
-  constructor(@Inject('CACHE_MODULE_OPTIONS') options: CacheModuleOptions) {
+  constructor(@Inject(CACHE_MODULE_OPTIONS_TOKEN) options: CacheModuleOptions) {
     if (options.redis) {
       // Direct require to bypass default export mismatch when esModuleInterop is disabled
       const RedisClient = require('ioredis');
@@ -90,7 +91,13 @@ export class RedisCacheProvider implements ICacheProvider {
       let cursor = '0';
       const matchPattern = pattern.endsWith('*') ? pattern : `${pattern}*`;
       do {
-        const [newCursor, keys] = await this.client.scan(cursor, 'MATCH', matchPattern, 'COUNT', 100);
+        const [newCursor, keys] = await this.client.scan(
+          cursor,
+          'MATCH',
+          matchPattern,
+          'COUNT',
+          100,
+        );
         cursor = newCursor;
         if (keys.length > 0) {
           await this.client.del(...keys);

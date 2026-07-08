@@ -2,12 +2,12 @@ import { TraceService } from './trace.service';
 import { RequestContextService } from '../request-context/request-context.service';
 
 export class DefaultTraceService extends TraceService {
-  getCurrentTraceId(): string | null {
-    return RequestContextService.getTraceId();
+  getCurrentTraceId(): string | undefined {
+    return RequestContextService.getTraceId() || undefined;
   }
 
-  getCurrentSpanId(): string | null {
-    return null;
+  getCurrentSpanId(): string | undefined {
+    return undefined;
   }
 
   async createChildSpan<T>(_spanName: string, operation: () => Promise<T>): Promise<T> {
