@@ -6,3 +6,6 @@ export * from './interceptors';
 export * from './pipes';
 export * from './interfaces/auth.interface';
 export * from './apis.module';
+export * from './auth/auth.middleware';
+export * from './auth/jwt.service';
+export * from './auth/interfaces/auth-context.interface';

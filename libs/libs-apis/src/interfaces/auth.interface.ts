@@ -11,10 +11,3 @@ export interface JwtPayload {
   /** Token type: must be 'access' */
   type: 'access';
 }
-
-export interface AuthenticatedUser {
-  id: string;
-  tenantCode: string;
-  email: string;
-  roles: string[];
-}

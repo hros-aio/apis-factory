@@ -40,15 +40,6 @@ describe('AuthGuard', () => {
 
   it('should authenticate token and populate request context', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockUserPayload = {
-      userId: 'user-123',
-      sessionId: 'session-456',
-      tenantCode: 'tenant-abc',
-      roles: ['admin'],
-      scopes: ['read'],
-      permissions: ['users.read'],
-    };
-    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
 
     const mockSession = {
       user: {
@@ -61,8 +52,10 @@ describe('AuthGuard', () => {
     mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
-      headers: {
-        authorization: 'Bearer valid-token',
+      authContent: {
+        sessionId: 'session-456',
+        tenantCode: 'tenant-abc',
+        payload: { sub: 'user-123' },
       },
       user: undefined as any,
     };
@@ -88,14 +81,13 @@ describe('AuthGuard', () => {
     });
 
     expect(result).toBe(true);
-    expect(mockStrategy.authenticate).toHaveBeenCalledWith('valid-token');
     expect(mockCacheService.get).toHaveBeenCalledWith('auth:session:session-456');
     expect(mockRequest.user).toEqual(mockSession.user);
   });
 
-  it('should throw UnauthorizedException if header is missing', async () => {
+  it('should throw UnauthorizedException if authContent is missing', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockRequest = { headers: {} };
+    const mockRequest = {};
     const mockContext = {
       getHandler: () => {},
       getClass: () => {},
@@ -109,20 +101,13 @@ describe('AuthGuard', () => {
 
   it('should throw UnauthorizedException if session is missing from cache', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockUserPayload = {
-      userId: 'user-123',
-      sessionId: 'session-456',
-      tenantCode: 'tenant-abc',
-      roles: [],
-      scopes: [],
-      permissions: [],
-    };
-    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
     mockCacheService.get.mockResolvedValue(null);
 
     const mockRequest = {
-      headers: {
-        authorization: 'Bearer valid-token',
+      authContent: {
+        sessionId: 'session-456',
+        tenantCode: 'tenant-abc',
+        payload: { sub: 'user-123' },
       },
     };
     const mockContext = {
@@ -138,15 +123,6 @@ describe('AuthGuard', () => {
 
   it('should throw PermissionDeniedException if tenant boundary is violated', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
-    const mockUserPayload = {
-      userId: 'user-123',
-      sessionId: 'session-456',
-      tenantCode: 'tenant-xyz',
-      roles: [],
-      scopes: [],
-      permissions: [],
-    };
-    mockStrategy.authenticate.mockResolvedValue(mockUserPayload);
 
     const mockSession = {
       user: {
@@ -159,8 +135,10 @@ describe('AuthGuard', () => {
     mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
-      headers: {
-        authorization: 'Bearer valid-token',
+      authContent: {
+        sessionId: 'session-456',
+        tenantCode: 'tenant-xyz',
+        payload: { sub: 'user-123' },
       },
     };
     const mockContext = {
