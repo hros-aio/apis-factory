@@ -1,42 +1,36 @@
-import { Module, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD, APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
-import { ApisModuleOptions, ApisModuleAsyncOptions, CacheProvider } from '@new-hros/libs-core';
-import { TraceMiddleware } from './middleware/trace.middleware';
-import { RequestLogMiddleware } from './middleware/request-log.middleware';
-import { JwtAuthStrategy } from './guards/jwt-auth.strategy';
+import { DynamicModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ApisModuleAsyncOptions, ApisModuleOptions, CacheProvider } from '@new-hros/libs-core';
+import { JwtService } from './auth/jwt.service';
+import { GlobalHttpExceptionFilter } from './filters/exception.filter';
 import { AuthGuard } from './guards/auth.guard';
 import { PermissionGuard } from './guards/permission.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
-import { GlobalHttpExceptionFilter } from './filters/exception.filter';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
 import { AuditInterceptor } from './interceptors/audit.interceptor';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { MetricsInterceptor } from './interceptors/metrics.interceptor';
+import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
+import { RequestLogMiddleware } from './middleware/request-log.middleware';
+import { TraceMiddleware } from './middleware/trace.middleware';
 import { PlatformValidationPipe } from './pipes/validation.pipe';
 
 @Module({})
 export class ApisModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(TraceMiddleware, RequestLogMiddleware)
-      .forRoutes('*');
+    consumer.apply(TraceMiddleware, RequestLogMiddleware).forRoutes('*');
   }
 
   static forRoot(options: ApisModuleOptions = {}): DynamicModule {
-    const authStrategyProvider = {
-      provide: 'AuthenticationStrategy',
-      useFactory: () => {
-        if (options.auth?.strategy) {
-          return options.auth.strategy;
-        }
-        return new JwtAuthStrategy(options.auth?.publicKey || 'mock-public-key');
-      },
+    const optionsProvider = {
+      provide: 'ApisModuleOptions',
+      useValue: options,
     };
 
     return {
       module: ApisModule,
       providers: [
-        authStrategyProvider,
+        optionsProvider,
+        JwtService,
         {
           provide: APP_GUARD,
           useClass: AuthGuard,
@@ -80,7 +74,7 @@ export class ApisModule implements NestModule {
           useClass: MetricsInterceptor,
         },
       ],
-      exports: ['AuthenticationStrategy'],
+      exports: ['AuthenticationStrategy', JwtService],
     };
   }
 
@@ -91,23 +85,12 @@ export class ApisModule implements NestModule {
       inject: options.inject || [],
     };
 
-    const authStrategyProvider = {
-      provide: 'AuthenticationStrategy',
-      useFactory: (apisOpts: ApisModuleOptions) => {
-        if (apisOpts.auth?.strategy) {
-          return apisOpts.auth.strategy;
-        }
-        return new JwtAuthStrategy(apisOpts.auth?.publicKey || 'mock-public-key');
-      },
-      inject: ['ApisModuleOptions'],
-    };
-
     return {
       module: ApisModule,
       imports: options.imports || [],
       providers: [
         optionsProvider,
-        authStrategyProvider,
+        JwtService,
         {
           provide: APP_GUARD,
           useClass: AuthGuard,
@@ -151,7 +134,7 @@ export class ApisModule implements NestModule {
           useClass: MetricsInterceptor,
         },
       ],
-      exports: ['AuthenticationStrategy'],
+      exports: [JwtService],
     };
   }
 }
