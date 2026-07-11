@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { RequestContextService } from '@new-hros/libs-core';
-import { AuthenticatedUser } from 'src/interfaces/auth.interface';
+import { Request } from 'express';
 
 export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
+  const request = ctx.switchToHttp().getRequest<Request>();
   if (request && request.user) {
     return request.user;
   }
