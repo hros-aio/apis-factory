@@ -13,7 +13,7 @@ export abstract class BaseEntity {
   id: string;
 
   @Index()
-  @Column({ name: 'tenant_code', type: 'varchar', length: 64 })
+  @Column({ name: 'tenant_code', type: 'varchar', length: 16 })
   tenantCode: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
