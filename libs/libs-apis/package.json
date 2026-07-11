@@ -33,7 +33,12 @@
     "class-validator": "^0.14.0",
     "jsonwebtoken": "^9.0.0"
   },
+  "peerDependencies": {
+    "@nestjs/swagger": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0"
+  },
   "devDependencies": {
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.0.0",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.11",
     "@types/jsonwebtoken": "^9.0.5",

@@ -5,7 +5,7 @@ declare global {
     interface Request {
       user?: AuthContext;
       tenantCode?: string;
-      sessionId?: stringl
+      sessionId?: string;
     }
   }
 }

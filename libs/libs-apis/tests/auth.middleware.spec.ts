@@ -66,10 +66,8 @@ describe('AuthMiddleware & JwtService', () => {
       middleware.use(mockRequest, mockResponse, next);
 
       expect(next).toHaveBeenCalled();
-      expect(mockRequest.authContent).toBeDefined();
-      expect(mockRequest.authContent?.sessionId).toBe('session-456');
-      expect(mockRequest.authContent?.tenantCode).toBe('VN001');
-      expect(mockRequest.authContent?.payload.sub).toBe('user-123');
+      expect(mockRequest.sessionId).toBe('session-456');
+      expect(mockRequest.tenantCode).toBe('VN001');
     });
 
     it('should not throw and not set authContent if Authorization header is missing', () => {
@@ -83,7 +81,7 @@ describe('AuthMiddleware & JwtService', () => {
       middleware.use(mockRequest, mockResponse, next);
 
       expect(next).toHaveBeenCalled();
-      expect(mockRequest.authContent).toBeUndefined();
+      expect(mockRequest.sessionId).toBeUndefined();
     });
 
     it('should not throw and not set authContent if Authorization format is invalid', () => {
@@ -99,7 +97,7 @@ describe('AuthMiddleware & JwtService', () => {
       middleware.use(mockRequest, mockResponse, next);
 
       expect(next).toHaveBeenCalled();
-      expect(mockRequest.authContent).toBeUndefined();
+      expect(mockRequest.sessionId).toBeUndefined();
     });
 
     it('should not throw and not set authContent if signature is invalid', () => {
@@ -127,7 +125,7 @@ describe('AuthMiddleware & JwtService', () => {
       middleware.use(mockRequest, mockResponse, next);
 
       expect(next).toHaveBeenCalled();
-      expect(mockRequest.authContent).toBeUndefined();
+      expect(mockRequest.sessionId).toBeUndefined();
     });
   });
 
@@ -143,7 +141,6 @@ describe('AuthMiddleware & JwtService', () => {
 
       expect(result.sessionId).toBe('session-456');
       expect(result.tenantCode).toBe('VN001');
-      expect(result.payload.sub).toBe('user-123');
     });
 
     it('should throw UnauthorizedException if signature is invalid', () => {

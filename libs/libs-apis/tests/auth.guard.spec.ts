@@ -1,21 +1,16 @@
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '../src/guards/auth.guard';
-import { AuthenticationStrategy } from '../src/guards/auth-strategy.interface';
 import { RequestContextService, RequestContext, UnauthorizedException, PermissionDeniedException, CacheService } from '@new-hros/libs-core';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
   let reflector: jest.Mocked<Reflector>;
-  let mockStrategy: jest.Mocked<AuthenticationStrategy>;
   let mockCacheService: jest.Mocked<CacheService>;
 
   beforeEach(() => {
     reflector = {
       getAllAndOverride: jest.fn(),
     } as any;
-    mockStrategy = {
-      authenticate: jest.fn(),
-    };
     mockCacheService = {
       get: jest.fn(),
       set: jest.fn(),
@@ -24,7 +19,7 @@ describe('AuthGuard', () => {
       flushAll: jest.fn(),
       flushNamespace: jest.fn(),
     } as any;
-    guard = new AuthGuard(reflector, mockStrategy, mockCacheService);
+    guard = new AuthGuard(reflector, mockCacheService);
   });
 
   it('should bypass authentication if route is decorated as public', async () => {
@@ -52,13 +47,10 @@ describe('AuthGuard', () => {
     mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
-      authContent: {
-        sessionId: 'session-456',
-        tenantCode: 'tenant-abc',
-        payload: { sub: 'user-123' },
-      },
+      sessionId: 'session-456',
+      tenantCode: 'tenant-abc',
       user: undefined as any,
-    };
+    } as any;
     const mockContext = {
       getHandler: () => {},
       getClass: () => {},
@@ -85,7 +77,7 @@ describe('AuthGuard', () => {
     expect(mockRequest.user).toEqual(mockSession.user);
   });
 
-  it('should throw UnauthorizedException if authContent is missing', async () => {
+  it('should throw UnauthorizedException if sessionId is missing', async () => {
     reflector.getAllAndOverride.mockReturnValue(false);
     const mockRequest = {};
     const mockContext = {
@@ -104,12 +96,9 @@ describe('AuthGuard', () => {
     mockCacheService.get.mockResolvedValue(null);
 
     const mockRequest = {
-      authContent: {
-        sessionId: 'session-456',
-        tenantCode: 'tenant-abc',
-        payload: { sub: 'user-123' },
-      },
-    };
+      sessionId: 'session-456',
+      tenantCode: 'tenant-abc',
+    } as any;
     const mockContext = {
       getHandler: () => {},
       getClass: () => {},
@@ -135,12 +124,9 @@ describe('AuthGuard', () => {
     mockCacheService.get.mockResolvedValue(mockSession);
 
     const mockRequest = {
-      authContent: {
-        sessionId: 'session-456',
-        tenantCode: 'tenant-xyz',
-        payload: { sub: 'user-123' },
-      },
-    };
+      sessionId: 'session-456',
+      tenantCode: 'tenant-xyz',
+    } as any;
     const mockContext = {
       getHandler: () => {},
       getClass: () => {},
