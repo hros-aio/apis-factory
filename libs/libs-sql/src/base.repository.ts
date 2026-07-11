@@ -1,8 +1,17 @@
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { TransactionService } from './transaction.service';
 import { RequestContextService } from '@new-hros/libs-core';
-import { PaginationOptions, PaginatedResult, buildPaginatedResult } from './pagination';
+import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { PaginatedResult, PaginationOptions, buildPaginatedResult } from './pagination';
+import { TransactionService } from './transaction.service';
+
+export interface QueryOneOptions {
+  required?: boolean;
+}
+
+export interface QueryManyOptions {
+  onlyIds?: boolean;
+  pagination?: PaginationOptions;
+}
 
 export abstract class BaseRepository<Entity extends BaseEntity> {
   constructor(
@@ -23,26 +32,29 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
   }
 
   private applyTenantScope(where?: FindOptionsWhere<Entity>): FindOptionsWhere<Entity> {
-    const scope: any = { tenantCode: this.tenantCode, isDeleted: false };
+    const scope: any = { tenantCode: this.tenantCode };
     return { ...(where || {}), ...scope } as FindOptionsWhere<Entity>;
   }
 
-  async create(entityData: Partial<Entity>): Promise<Entity> {
-    const user = RequestContextService.getUser();
+  async create(entityData: DeepPartial<Entity>): Promise<Entity> {
     const entity = this.repository.create({
       ...entityData,
       tenantCode: this.tenantCode,
-      createdBy: user?.userId || undefined,
-      updatedBy: user?.userId || undefined,
-    } as any);
+    });
 
     return this.repository.save(entity as any) as unknown as Promise<Entity>;
   }
 
-  async findById(id: string): Promise<Entity | null> {
-    return this.repository.findOne({
-      where: this.applyTenantScope({ id } as any),
+  async findById(id: string): Promise<Entity | null>;
+  async findById(id: string, options: QueryOneOptions & { required: true }): Promise<Entity>;
+  async findById(id: string, options?: QueryOneOptions): Promise<Entity | null> {
+    const data = await this.repository.findOne({
+      where: this.applyTenantScope({ id } as FindOptionsWhere<Entity>),
     });
+    if (!data && options?.required) {
+      throw new Error(`Record not found with ID: ${id}`);
+    }
+    return data || null;
   }
 
   async findPaginated(
@@ -62,50 +74,30 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
     return buildPaginatedResult(data, total, options);
   }
 
-  async update(id: string, entityData: Partial<Entity>): Promise<Entity> {
-    const user = RequestContextService.getUser();
-    
+  async update(id: string, entityData: DeepPartial<Entity>): Promise<Entity> {
     // Fetch entity first to ensure it belongs to the tenant
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new Error(`Record not found with ID: ${id}`);
-    }
+    const existing = await this.findById(id, { required: true });
+    const updated = this.repository.merge(existing, entityData);
 
-    const updated = this.repository.merge(existing, {
-      ...entityData,
-      updatedBy: user?.userId || undefined,
-    } as any);
-
-    return this.repository.save(updated as any) as unknown as Promise<Entity>;
+    return this.repository.save(updated);
   }
 
   async delete(id: string): Promise<void> {
-    const user = RequestContextService.getUser();
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new Error(`Record not found with ID: ${id}`);
-    }
+    await this.findById(id, { required: true });
 
-    existing.isDeleted = true;
-    existing.deletedAt = new Date();
-    existing.updatedBy = user?.userId || undefined;
-
-    await this.repository.save(existing);
+    await this.repository.softDelete(id);
   }
 
   async restore(id: string): Promise<void> {
-    const user = RequestContextService.getUser();
     const existing = await this.repository.findOne({
-      where: { id, tenantCode: this.tenantCode, isDeleted: true } as any,
+      where: this.applyTenantScope({ id } as FindOptionsWhere<Entity>),
+      withDeleted: true,
     });
     if (!existing) {
       throw new Error(`Soft-deleted record not found with ID: ${id}`);
     }
 
-    existing.isDeleted = false;
-    existing.deletedAt = undefined;
-    existing.updatedBy = user?.userId || undefined;
-
-    await this.repository.save(existing);
+    await this.repository.restore(id);
   }
 }
+

@@ -25,9 +25,6 @@ export abstract class BaseEntity {
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
   deletedAt?: Date;
 
-  @Column({ name: 'is_deleted', type: 'boolean', default: false })
-  isDeleted: boolean;
-
   @VersionColumn({ default: 1 })
   version: number;
 }
