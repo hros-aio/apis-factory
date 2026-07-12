@@ -13,3 +13,4 @@ export * from './cors';
 export * from './swagger';
 export * from './versioning';
 export * from './pagination';
+export * from './health';
