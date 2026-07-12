@@ -50,6 +50,6 @@ export interface ApisModuleOptions {
 export interface ApisModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
   useExisting?: Type<any>;
   useClass?: Type<any>;
-  useFactory?: (...args: any[]) => Promise<ApisModuleOptions> | ApisModuleOptions;
+  useFactory: (...args: any[]) => Promise<ApisModuleOptions> | ApisModuleOptions;
   inject?: any[];
 }

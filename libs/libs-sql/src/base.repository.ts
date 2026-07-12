@@ -1,8 +1,19 @@
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { TransactionService } from './transaction.service';
 import { RequestContextService } from '@new-hros/libs-core';
-import { PaginationOptions, PaginatedResult, buildPaginatedResult } from './pagination';
+import { DeepPartial, FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { PaginatedResult, PaginationOptions, buildPaginatedResult } from './pagination';
+import { TransactionService } from './transaction.service';
+
+export interface QueryOneOptions {
+  required?: boolean;
+}
+
+export interface QueryManyOptions {
+  onlyIds?: boolean;
+  pagination?: PaginationOptions;
+  cache?: boolean;
+  withDeleted?: boolean;
+}
 
 export abstract class BaseRepository<Entity extends BaseEntity> {
   constructor(
@@ -23,26 +34,47 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
   }
 
   private applyTenantScope(where?: FindOptionsWhere<Entity>): FindOptionsWhere<Entity> {
-    const scope: any = { tenantCode: this.tenantCode, isDeleted: false };
+    const scope: any = { tenantCode: this.tenantCode };
     return { ...(where || {}), ...scope } as FindOptionsWhere<Entity>;
   }
 
-  async create(entityData: Partial<Entity>): Promise<Entity> {
-    const user = RequestContextService.getUser();
+  async create(entityData: DeepPartial<Entity>): Promise<Entity> {
     const entity = this.repository.create({
       ...entityData,
       tenantCode: this.tenantCode,
-      createdBy: user?.userId || undefined,
-      updatedBy: user?.userId || undefined,
-    } as any);
+    });
 
     return this.repository.save(entity as any) as unknown as Promise<Entity>;
   }
 
-  async findById(id: string): Promise<Entity | null> {
-    return this.repository.findOne({
-      where: this.applyTenantScope({ id } as any),
+  async findOne(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
+  async findOne(
+    where: FindOptionsWhere<Entity>,
+    options: QueryOneOptions & { required: true },
+  ): Promise<Entity>;
+  async findOne(
+    where: FindOptionsWhere<Entity>,
+    options?: QueryOneOptions,
+  ): Promise<Entity | null> {
+    const data = await this.repository.findOne({
+      where: this.applyTenantScope(where),
     });
+    if (!data && options?.required) {
+      throw new Error(`Record not found with query: ${where}`);
+    }
+    return data || null;
+  }
+
+  async findById(id: string): Promise<Entity | null>;
+  async findById(id: string, options: QueryOneOptions & { required: true }): Promise<Entity>;
+  async findById(id: string, options?: QueryOneOptions): Promise<Entity | null> {
+    const data = await this.repository.findOne({
+      where: this.applyTenantScope({ id } as FindOptionsWhere<Entity>),
+    });
+    if (!data && options?.required) {
+      throw new Error(`Record not found with ID: ${id}`);
+    }
+    return data || null;
   }
 
   async findPaginated(
@@ -62,50 +94,76 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
     return buildPaginatedResult(data, total, options);
   }
 
-  async update(id: string, entityData: Partial<Entity>): Promise<Entity> {
-    const user = RequestContextService.getUser();
-    
-    // Fetch entity first to ensure it belongs to the tenant
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new Error(`Record not found with ID: ${id}`);
+  async find(where: FindOptionsWhere<Entity>): Promise<Entity[]>;
+  async find(
+    where: FindOptionsWhere<Entity>,
+    options: QueryManyOptions & { onlyIds: true },
+  ): Promise<string[]>;
+  async find(
+    where: FindOptionsWhere<Entity>,
+    options: QueryManyOptions & { pagination: PaginationOptions },
+  ): Promise<PaginatedResult<Entity>>;
+  async find(where: FindOptionsWhere<Entity>, options?: QueryManyOptions) {
+    if (options?.onlyIds) {
+      const data = await this.repository.find({
+        select: { id: true } as FindOptionsSelect<Entity>,
+        where: this.applyTenantScope(where),
+      });
+      return data.map((item) => item.id);
     }
 
-    const updated = this.repository.merge(existing, {
-      ...entityData,
-      updatedBy: user?.userId || undefined,
-    } as any);
+    if (options?.pagination) {
+      return this.findPaginated(options.pagination, where);
+    }
 
-    return this.repository.save(updated as any) as unknown as Promise<Entity>;
+    return this.repository.find({
+      ...options,
+      where: this.applyTenantScope(where),
+    });
+  }
+
+  async update(id: string, entityData: DeepPartial<Entity>): Promise<Entity> {
+    // Fetch entity first to ensure it belongs to the tenant
+    const existing = await this.findById(id, { required: true });
+    const updated = this.repository.merge(existing, entityData);
+
+    return this.repository.save(updated);
   }
 
   async delete(id: string): Promise<void> {
-    const user = RequestContextService.getUser();
-    const existing = await this.findById(id);
-    if (!existing) {
+    const isExist = await this.exists({ id } as FindOptionsWhere<Entity>);
+    if (!isExist) {
       throw new Error(`Record not found with ID: ${id}`);
     }
 
-    existing.isDeleted = true;
-    existing.deletedAt = new Date();
-    existing.updatedBy = user?.userId || undefined;
+    await this.repository.softDelete(id);
+  }
 
-    await this.repository.save(existing);
+  async forceDelete(id: string): Promise<void> {
+    const isExist = await this.exists({ id } as FindOptionsWhere<Entity>);
+    if (!isExist) {
+      throw new Error(`Record not found with ID: ${id}`);
+    }
+
+    await this.repository.delete(id);
   }
 
   async restore(id: string): Promise<void> {
-    const user = RequestContextService.getUser();
     const existing = await this.repository.findOne({
-      where: { id, tenantCode: this.tenantCode, isDeleted: true } as any,
+      where: this.applyTenantScope({ id } as FindOptionsWhere<Entity>),
+      withDeleted: true,
     });
     if (!existing) {
       throw new Error(`Soft-deleted record not found with ID: ${id}`);
     }
 
-    existing.isDeleted = false;
-    existing.deletedAt = undefined;
-    existing.updatedBy = user?.userId || undefined;
+    await this.repository.restore(id);
+  }
 
-    await this.repository.save(existing);
+  async exists(where: FindOptionsWhere<Entity>): Promise<boolean> {
+    const count = await this.repository.count({
+      where: this.applyTenantScope(where),
+    });
+    return count > 0;
   }
 }
