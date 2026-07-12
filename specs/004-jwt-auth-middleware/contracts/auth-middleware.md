@@ -12,14 +12,14 @@ Authorization: Bearer <JWT_TOKEN>
 ```
 
 - **Format**: Must begin with `Bearer ` (case-sensitive) followed by a single space and a valid RS256 JWT.
-- **Missing Header**: Triggers a `401 Unauthorized` response.
-- **Incorrect Prefix**: Triggers a `401 Unauthorized` response.
+- **Missing or Invalid Token**: `AuthMiddleware` catches validation errors, logs a warning, and continues (calls `next()`). It does not reject the request or return a 401 response.
+- **Enforcement**: `AuthGuard` must be registered on protected endpoints; it verifies that the session is valid and throws the `UnauthorizedException` to produce a `401 Unauthorized` response.
 
 ---
 
 ## Response Interface (Failure Cases)
 
-When validation fails, the middleware returns a `401 Unauthorized` response. The response body is formatted by the global `GlobalHttpExceptionFilter`:
+When token validation fails and a request accesses an endpoint protected by `AuthGuard`, the guard throws an `UnauthorizedException`, producing a `401 Unauthorized` response. The response body is formatted by the global `GlobalHttpExceptionFilter`:
 
 ### Example 401 Response (Missing Header)
 ```json

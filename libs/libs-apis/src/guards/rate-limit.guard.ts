@@ -17,7 +17,8 @@ export class RateLimitGuard implements CanActivate {
     const clientId = request.ip || request.socket.remoteAddress || 'global';
 
     const key = `ratelimit:${clientId}`;
-    const currentCount = (await this.cacheProvider.get<number>(key)) || 0;
+    const record = await this.cacheProvider.get<{ count: number; expiresAt: number }>(key);
+    const currentCount = record ? record.count : 0;
 
     if (currentCount >= this.options.limit) {
       throw new BusinessException(
@@ -27,7 +28,14 @@ export class RateLimitGuard implements CanActivate {
       );
     }
 
-    await this.cacheProvider.set(key, currentCount + 1, this.options.windowSeconds);
+    if (currentCount === 0) {
+      const expiresAt = Date.now() + this.options.windowSeconds * 1000;
+      await this.cacheProvider.set(key, { count: 1, expiresAt }, this.options.windowSeconds);
+    } else {
+      const expiresAt = record!.expiresAt;
+      const remainingTtl = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      await this.cacheProvider.set(key, { count: currentCount + 1, expiresAt }, remainingTtl);
+    }
     return true;
   }
 }

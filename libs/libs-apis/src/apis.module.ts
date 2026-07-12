@@ -87,9 +87,12 @@ export class ApisModule implements NestModule {
   }
 
   static forRootAsync(options: ApisModuleAsyncOptions): DynamicModule {
+    if (!options || !options.useFactory) {
+      throw new Error('ApisModuleAsyncOptions.useFactory is required');
+    }
     const optionsProvider = {
       provide: API_MODULE_OPTIONS_TOKEN,
-      useFactory: options.useFactory!,
+      useFactory: options.useFactory,
       inject: options.inject || [],
     };
 
