@@ -1,9 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   AuthContext,
   CACHE_KEY_BUILDER,
-  CacheService,
+  CACHE_PROVIDER_TOKEN,
+  CacheProvider,
   PermissionDeniedException,
   RequestContextService,
   UnauthorizedException,
@@ -14,7 +15,8 @@ import { Request } from 'express';
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly cacheService: CacheService,
+    @Inject(CACHE_PROVIDER_TOKEN)
+    private readonly cacheService: CacheProvider,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

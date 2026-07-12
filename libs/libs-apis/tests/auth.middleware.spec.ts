@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Request, Response } from 'express';
+import { API_MODULE_OPTIONS_TOKEN } from '../src/apis.module';
 import { UnauthorizedException } from '@new-hros/libs-core';
+import * as crypto from 'crypto';
+import { Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 import { AuthMiddleware } from '../src/auth/auth.middleware';
 import { JwtService } from '../src/auth/jwt.service';
-import * as crypto from 'crypto';
-import * as jwt from 'jsonwebtoken';
 
 describe('AuthMiddleware & JwtService', () => {
   let middleware: AuthMiddleware;
@@ -27,7 +28,7 @@ describe('AuthMiddleware & JwtService', () => {
       providers: [
         JwtService,
         {
-          provide: 'ApisModuleOptions',
+          provide: API_MODULE_OPTIONS_TOKEN,
           useValue: {
             auth: {
               publicKey,
@@ -206,7 +207,7 @@ describe('AuthMiddleware & JwtService', () => {
         providers: [
           JwtService,
           {
-            provide: 'ApisModuleOptions',
+            provide: API_MODULE_OPTIONS_TOKEN,
             useValue: {},
           },
         ],

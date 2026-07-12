@@ -1,6 +1,11 @@
 import { DynamicModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { ApisModuleAsyncOptions, ApisModuleOptions, CacheProvider } from '@new-hros/libs-core';
+import {
+  ApisModuleAsyncOptions,
+  ApisModuleOptions,
+  CACHE_PROVIDER_TOKEN,
+  CacheProvider,
+} from '@new-hros/libs-core';
 import { JwtService } from './auth/jwt.service';
 import { GlobalHttpExceptionFilter } from './filters/exception.filter';
 import { AuthGuard } from './guards/auth.guard';
@@ -14,6 +19,9 @@ import { RequestLogMiddleware } from './middleware/request-log.middleware';
 import { TraceMiddleware } from './middleware/trace.middleware';
 import { PlatformValidationPipe } from './pipes/validation.pipe';
 
+import { API_MODULE_OPTIONS_TOKEN } from './apis.constants';
+export { API_MODULE_OPTIONS_TOKEN };
+
 @Module({})
 export class ApisModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
@@ -22,7 +30,7 @@ export class ApisModule implements NestModule {
 
   static forRoot(options: ApisModuleOptions = {}): DynamicModule {
     const optionsProvider = {
-      provide: 'ApisModuleOptions',
+      provide: API_MODULE_OPTIONS_TOKEN,
       useValue: options,
     };
 
@@ -47,7 +55,7 @@ export class ApisModule implements NestModule {
               windowSeconds: options.rateLimit?.windowSeconds ?? 60,
             });
           },
-          inject: ['CacheProvider'],
+          inject: [CACHE_PROVIDER_TOKEN],
         },
         {
           provide: APP_FILTER,
@@ -74,13 +82,13 @@ export class ApisModule implements NestModule {
           useClass: MetricsInterceptor,
         },
       ],
-      exports: ['AuthenticationStrategy', JwtService],
+      exports: [JwtService],
     };
   }
 
   static forRootAsync(options: ApisModuleAsyncOptions): DynamicModule {
     const optionsProvider = {
-      provide: 'ApisModuleOptions',
+      provide: API_MODULE_OPTIONS_TOKEN,
       useFactory: options.useFactory!,
       inject: options.inject || [],
     };
@@ -107,7 +115,7 @@ export class ApisModule implements NestModule {
               windowSeconds: apisOpts.rateLimit?.windowSeconds ?? 60,
             });
           },
-          inject: ['CacheProvider', 'ApisModuleOptions'],
+          inject: [CACHE_PROVIDER_TOKEN, API_MODULE_OPTIONS_TOKEN],
         },
         {
           provide: APP_FILTER,

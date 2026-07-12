@@ -1,0 +1,1 @@
+export const API_MODULE_OPTIONS_TOKEN = Symbol('API_MODULE_OPTIONS');

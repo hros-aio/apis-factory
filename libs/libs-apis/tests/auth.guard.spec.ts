@@ -1,11 +1,11 @@
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '../src/guards/auth.guard';
-import { RequestContextService, RequestContext, UnauthorizedException, PermissionDeniedException, CacheService } from '@new-hros/libs-core';
+import { RequestContextService, RequestContext, UnauthorizedException, PermissionDeniedException, CacheProvider } from '@new-hros/libs-core';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
   let reflector: jest.Mocked<Reflector>;
-  let mockCacheService: jest.Mocked<CacheService>;
+  let mockCacheService: jest.Mocked<CacheProvider>;
 
   beforeEach(() => {
     reflector = {

@@ -9,3 +9,5 @@ export const CACHE_KEY_BUILDER = {
 };
 
 export const CACHE_MODULE_OPTIONS_TOKEN = Symbol('CACHE_MODULE_OPTIONS');
+
+export const CACHE_PROVIDER_TOKEN = Symbol('CACHE_PROVIDER');

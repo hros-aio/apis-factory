@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApisModuleOptions, UnauthorizedException } from '@new-hros/libs-core';
 import * as jwt from 'jsonwebtoken';
+import { API_MODULE_OPTIONS_TOKEN } from '../apis.constants';
 
 @Injectable()
 export class JwtService {
   constructor(
-    @Inject('ApisModuleOptions')
+    @Inject(API_MODULE_OPTIONS_TOKEN)
     private readonly options: ApisModuleOptions,
   ) {}
 
