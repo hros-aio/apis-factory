@@ -23,7 +23,7 @@ export interface KafkaConfiguration {
 
 export interface JwtConfiguration {
   publicKey: string;
-  privateKey: string;
+  privateKey?: string;
 }
 
 export interface Configuration {

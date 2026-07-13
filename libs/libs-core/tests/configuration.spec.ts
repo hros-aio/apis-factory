@@ -136,6 +136,24 @@ jwt:
   });
 
   describe('2. Validation & Fail-fast', () => {
+    it('should not throw on missing optional privateKey', async () => {
+      fs.writeFileSync(
+        path.join(tmpConfigDir, 'jwt.yaml'),
+        `
+jwt:
+  publicKey: pub-key
+`
+      );
+
+      const module: TestingModule = await Test.createTestingModule({
+        imports: [ConfigurationModule.register({ configDir: tmpConfigDir })],
+      }).compile();
+
+      const service = module.get<ConfigurationService>(ConfigurationService);
+      expect(service.get('jwt.publicKey')).toBe('pub-key');
+      expect(service.get('jwt.privateKey')).toBeUndefined();
+    });
+
     it('should throw ConfigurationValidationException on missing required keys', async () => {
       // Remove database username and password in YAML to cause validation error
       fs.writeFileSync(
