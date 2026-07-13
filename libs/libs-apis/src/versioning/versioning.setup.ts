@@ -3,7 +3,7 @@ import { VersioningSetupOptions } from './interfaces';
 
 /**
  * Reusable utility to configure API versioning on a NestJS application.
- * Forces the use of Media Type versioning strategy (key: "v") as per requirements.
+ * Forces the use of Media Type versioning strategy (key: "v=") as per requirements.
  *
  * @param app The NestJS application instance.
  * @param options Configurations for versioning setup.
@@ -11,7 +11,7 @@ import { VersioningSetupOptions } from './interfaces';
 export function setupVersioning(app: INestApplication, options: VersioningSetupOptions = {}): void {
   app.enableVersioning({
     type: VersioningType.MEDIA_TYPE,
-    key: 'v',
+    key: 'v=',
     defaultVersion: options.defaultVersion,
   });
 }
