@@ -133,6 +133,50 @@ jwt:
       const service = module.get<ConfigurationService>(ConfigurationService);
       expect(service.get('kafka.brokers')).toEqual(['kafka-env-1:9092', 'kafka-env-2:9092']);
     });
+
+    it('should load environment variables from envPath using dotenv if the file exists', async () => {
+      const tmpEnvPath = path.join(tmpConfigDir, '.env');
+      fs.writeFileSync(tmpEnvPath, 'DATABASE__PORT=7777\nAPP_PORT=3333');
+
+      const module: TestingModule = await Test.createTestingModule({
+        imports: [
+          ConfigurationModule.register({
+            configDir: tmpConfigDir,
+            envPath: tmpEnvPath,
+          }),
+        ],
+      }).compile();
+
+      const service = module.get<ConfigurationService>(ConfigurationService);
+      expect(service.get('database.port')).toBe(7777);
+      expect(service.get('app.port')).toBe(3333);
+
+      fs.unlinkSync(tmpEnvPath);
+    });
+
+    it('should update environment variables on reload when the envPath file is updated', async () => {
+      const tmpEnvPath = path.join(tmpConfigDir, '.env');
+      fs.writeFileSync(tmpEnvPath, 'DATABASE__PORT=7777\nAPP_PORT=3333');
+
+      const module: TestingModule = await Test.createTestingModule({
+        imports: [
+          ConfigurationModule.register({
+            configDir: tmpConfigDir,
+            envPath: tmpEnvPath,
+          }),
+        ],
+      }).compile();
+
+      const service = module.get<ConfigurationService>(ConfigurationService);
+      expect(service.get('database.port')).toBe(7777);
+
+      fs.writeFileSync(tmpEnvPath, 'DATABASE__PORT=8888\nAPP_PORT=3333');
+      service.reload();
+
+      expect(service.get('database.port')).toBe(8888);
+
+      fs.unlinkSync(tmpEnvPath);
+    });
   });
 
   describe('2. Validation & Fail-fast', () => {
