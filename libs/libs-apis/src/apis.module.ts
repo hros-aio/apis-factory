@@ -19,8 +19,8 @@ import { RequestLogMiddleware } from './middleware/request-log.middleware';
 import { TraceMiddleware } from './middleware/trace.middleware';
 import { PlatformValidationPipe } from './pipes/validation.pipe';
 
-import { API_MODULE_OPTIONS_TOKEN } from './apis.constants';
-export { API_MODULE_OPTIONS_TOKEN };
+import { API_MODULE_OPTIONS_TOKEN, TIMEOUT_MS_TOKEN } from './apis.constants';
+export { API_MODULE_OPTIONS_TOKEN, TIMEOUT_MS_TOKEN };
 
 @Module({})
 export class ApisModule implements NestModule {
@@ -38,6 +38,7 @@ export class ApisModule implements NestModule {
       module: ApisModule,
       providers: [
         optionsProvider,
+        { provide: TIMEOUT_MS_TOKEN, useValue: 5000 },
         JwtService,
         {
           provide: APP_GUARD,
@@ -101,6 +102,7 @@ export class ApisModule implements NestModule {
       imports: options.imports || [],
       providers: [
         optionsProvider,
+        { provide: TIMEOUT_MS_TOKEN, useValue: 5000 },
         JwtService,
         {
           provide: APP_GUARD,

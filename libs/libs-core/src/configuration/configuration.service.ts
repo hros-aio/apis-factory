@@ -1,4 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import fs from 'fs';
+import dotenv from 'dotenv';
 import { CONFIGURATION_OPTIONS, ConfigurationNotFoundException } from './configuration.constants';
 import { Configuration } from './configuration.interface';
 import { loadAndValidateConfig } from './configuration.loader';
@@ -6,12 +8,14 @@ import { maskSecrets } from './configuration.utils';
 
 export interface ConfigurationModuleOptions {
   configDir?: string;
+  envPath?: string;
 }
 
 @Injectable()
 export class ConfigurationService {
   private cache!: Configuration;
   private readonly configDir: string;
+  private readonly envPath?: string;
 
   constructor(
     @Optional()
@@ -19,6 +23,12 @@ export class ConfigurationService {
     options: ConfigurationModuleOptions | null
   ) {
     this.configDir = options?.configDir || 'config';
+    this.envPath = options?.envPath;
+
+    if (this.envPath && fs.existsSync(this.envPath)) {
+      dotenv.config({ path: this.envPath });
+    }
+
     this.load();
     this.logLoadSummary();
   }
@@ -77,6 +87,9 @@ export class ConfigurationService {
   }
 
   public reload(): void {
+    if (this.envPath && fs.existsSync(this.envPath)) {
+      dotenv.config({ path: this.envPath, override: true });
+    }
     // Attempt load and validate. If successful, update cache.
     // If validation fails, throws and preserves the previous cache.
     const newConfig = loadAndValidateConfig(this.configDir);

@@ -1,6 +1,6 @@
 {
   "name": "api-factory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "NestJS multi-tenant microservices library foundation monorepo",
   "workspaces": [

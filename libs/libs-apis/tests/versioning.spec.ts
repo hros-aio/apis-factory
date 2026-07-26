@@ -16,13 +16,13 @@ describe('API Versioning Setup Utility', () => {
     jest.restoreAllMocks();
   });
 
-  it('should call enableVersioning with VersioningType.MEDIA_TYPE and key "v"', () => {
+  it('should call enableVersioning with VersioningType.MEDIA_TYPE and key "v="', () => {
     setupVersioning(app);
 
     expect(enableVersioningSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: VersioningType.MEDIA_TYPE,
-        key: 'v',
+        key: 'v=',
       }),
     );
   });
@@ -33,7 +33,7 @@ describe('API Versioning Setup Utility', () => {
     expect(enableVersioningSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: VersioningType.MEDIA_TYPE,
-        key: 'v',
+        key: 'v=',
         defaultVersion: '2',
       }),
     );
