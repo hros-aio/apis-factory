@@ -3,8 +3,12 @@ name: Release Packages to NPM Registry
 on:
   push:
     branches:
-      - main
       - master
+
+  pull_request:
+    branches:
+      - master
+
   workflow_dispatch:
     inputs:
       dry-run:
