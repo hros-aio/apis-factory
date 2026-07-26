@@ -20,6 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@new-hros/libs-core": ["libs/libs-core/src"],
+      "@new-hros/libs-events": ["libs/libs-events/src"],
       "@new-hros/libs-sql": ["libs/libs-sql/src"],
       "@new-hros/libs-mongo": ["libs/libs-mongo/src"],
       "@new-hros/libs-apis": ["libs/libs-apis/src"]
