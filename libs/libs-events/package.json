@@ -1,6 +1,6 @@
 {
   "name": "@new-hros/libs-events",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NestJS multi-tenant platform foundation - Event Handling Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
