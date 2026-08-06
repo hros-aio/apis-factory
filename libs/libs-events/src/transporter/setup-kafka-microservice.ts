@@ -33,8 +33,24 @@ export async function setupKafkaMicroservice(
 
   try {
     const { KafkaRetryInterceptor } = require('../interceptors/kafka-retry.interceptor');
-    const interceptor = app.get(KafkaRetryInterceptor);
-    app.useGlobalInterceptors(interceptor);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const container = (app as any).container;
+    const modules = container?.getModules();
+    let hasProvider = false;
+    if (modules) {
+      for (const moduleRef of modules.values()) {
+        if (moduleRef.providers.has(KafkaRetryInterceptor)) {
+          hasProvider = true;
+          break;
+        }
+      }
+    }
+    if (hasProvider) {
+      const interceptor = app.get(KafkaRetryInterceptor);
+      if (interceptor) {
+        app.useGlobalInterceptors(interceptor);
+      }
+    }
   } catch (error) {
     console.warn('[Events] KafkaRetryInterceptor could not be resolved from container. Booting microservice without retries.');
   }

@@ -8,6 +8,10 @@ import { ICacheProvider } from './interfaces/cache-provider.interface';
 export class RedisCacheProvider implements ICacheProvider {
   private readonly client: Redis | null = null;
 
+  getClient(): Redis | null {
+    return this.client;
+  }
+
   constructor(@Inject(CACHE_MODULE_OPTIONS_TOKEN) options: CacheModuleOptions) {
     if (options.redis) {
       // Direct require to bypass default export mismatch when esModuleInterop is disabled
