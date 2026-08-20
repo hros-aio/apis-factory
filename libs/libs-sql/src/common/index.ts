@@ -1,3 +1,4 @@
+export * from './enums';
 export * from './company.entity';
 export * from './department.entity';
 export * from './location.entity';

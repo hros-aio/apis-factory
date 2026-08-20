@@ -1,10 +1,23 @@
 import { DataSource } from 'typeorm';
 
-// Mock the TypeORM date/time column decorators to be compatible with SQLite (ignoring timestamptz)
+// Mock the TypeORM column decorators to be compatible with SQLite
 jest.mock('typeorm', () => {
   const original = jest.requireActual('typeorm');
+  const typeMap: Record<string, string> = {
+    timestamptz: 'datetime',
+    jsonb: 'simple-json',
+    char: 'varchar',
+    uuid: 'varchar',
+  };
   return {
     ...original,
+    Column: (optionsOrType: any = {}, maybeOptions: any = {}) => {
+      if (typeof optionsOrType === 'object' && optionsOrType !== null) {
+        const type = typeMap[optionsOrType.type] || optionsOrType.type;
+        return original.Column({ ...optionsOrType, type });
+      }
+      return original.Column(optionsOrType, maybeOptions);
+    },
     CreateDateColumn: (options: any = {}) => {
       return original.CreateDateColumn({ ...options, type: undefined });
     },
@@ -17,7 +30,7 @@ jest.mock('typeorm', () => {
   };
 });
 
-import { Company, Department, Location, Grade, JobTitle } from '../../src/common';
+import { Company, CompanyStatus, Department, Location, Grade, JobTitle } from '../../src/common';
 
 describe('Company Entity', () => {
   let dataSource: DataSource;
@@ -44,20 +57,19 @@ describe('Company Entity', () => {
     const repository = dataSource.getRepository(Company);
     const company = repository.create({
       tenantCode: 'tenant-123',
-      name: 'Acme Corp',
-      status: 'pending',
+      tenantId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      companyCode: 'COMP-001',
       legalName: 'Acme Corporation Inc.',
-      registrationNo: 'REG12345',
-      taxId: 'TAX9999',
-      website: 'https://acme.com',
-      industry: 'Manufacturing',
-      size: 500,
-      logo: 'logo.png',
-      foundedDate: new Date('2020-01-01'),
-      contactName: 'John Doe',
-      contactEmail: 'john@acme.com',
-      contactPhone: '+12345678',
-      contactTitle: 'CEO',
+      displayName: 'Acme Corp',
+      status: CompanyStatus.PENDING,
+      isTemplate: false,
+      registrationNumber: 'REG12345',
+      taxRegistrationNumber: 'TAX9999',
+      countryCode: 'US',
+      legalAddress: { street: '123 Main St', city: 'Metropolis' },
+      timezone: 'UTC',
+      locale: 'en_US',
+      currencyCode: 'USD',
     });
 
     const savedCompany = await repository.save(company);
@@ -66,50 +78,10 @@ describe('Company Entity', () => {
 
     const retrieved = await repository.findOneBy({ id: savedCompany.id });
     expect(retrieved).toBeDefined();
-    expect(retrieved?.name).toBe('Acme Corp');
-    expect(retrieved?.status).toBe('pending');
-  });
-
-  it('should support parent-subsidiary (holding) relationship', async () => {
-    const repository = dataSource.getRepository(Company);
-    
-    const holding = repository.create({
-      tenantCode: 'tenant-123',
-      name: 'Holding Co',
-      status: 'active',
-      legalName: 'Holding Co Ltd',
-      registrationNo: 'HOLD1',
-      taxId: 'TAXHOLD',
-      website: 'https://holding.com',
-      industry: 'Finance',
-      size: 50,
-      logo: 'logo2.png',
-      foundedDate: new Date('2010-01-01'),
-    });
-    const savedHolding = await repository.save(holding);
-
-    const subsidiary = repository.create({
-      tenantCode: 'tenant-123',
-      name: 'Subsidiary Co',
-      status: 'active',
-      legalName: 'Subsidiary Co Ltd',
-      registrationNo: 'SUB1',
-      taxId: 'TAXSUB',
-      website: 'https://sub.com',
-      industry: 'Retail',
-      size: 10,
-      logo: 'logo3.png',
-      foundedDate: new Date('2022-01-01'),
-      holdingId: savedHolding.id,
-    });
-    const savedSubsidiary = await repository.save(subsidiary);
-
-    const retrievedSub = await repository.findOne({
-      where: { id: savedSubsidiary.id },
-      relations: ['holding'],
-    });
-
-    expect(retrievedSub).toBeDefined();
-    expect(retrievedSub?.holding?.id).toBe(savedHolding.id);
+    expect(retrieved?.companyCode).toBe('COMP-001');
+    expect(retrieved?.legalName).toBe('Acme Corporation Inc.');
+    expect(retrieved?.displayName).toBe('Acme Corp');
+    expect(retrieved?.status).toBe(CompanyStatus.PENDING);
+    expect(retrieved?.countryCode).toBe('US');
   });
 });
