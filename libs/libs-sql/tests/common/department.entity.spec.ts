@@ -1,10 +1,23 @@
 import { DataSource } from 'typeorm';
 
-// Mock the TypeORM date/time column decorators to be compatible with SQLite (ignoring timestamptz)
+// Mock the TypeORM column decorators to be compatible with SQLite
 jest.mock('typeorm', () => {
   const original = jest.requireActual('typeorm');
+  const typeMap: Record<string, string> = {
+    timestamptz: 'datetime',
+    jsonb: 'simple-json',
+    char: 'varchar',
+    uuid: 'varchar',
+  };
   return {
     ...original,
+    Column: (optionsOrType: any = {}, maybeOptions: any = {}) => {
+      if (typeof optionsOrType === 'object' && optionsOrType !== null) {
+        const type = typeMap[optionsOrType.type] || optionsOrType.type;
+        return original.Column({ ...optionsOrType, type });
+      }
+      return original.Column(optionsOrType, maybeOptions);
+    },
     CreateDateColumn: (options: any = {}) => {
       return original.CreateDateColumn({ ...options, type: undefined });
     },
@@ -17,7 +30,7 @@ jest.mock('typeorm', () => {
   };
 });
 
-import { Company, Department, Location, Grade, JobTitle } from '../../src/common';
+import { Company, CompanyStatus, Department, Location, Grade, JobTitle, MasterDataStatus } from '../../src/common';
 
 describe('Department Entity', () => {
   let dataSource: DataSource;
@@ -38,16 +51,12 @@ describe('Department Entity', () => {
     const companyRepo = dataSource.getRepository(Company);
     const company = companyRepo.create({
       tenantCode: 'tenant-123',
-      name: 'Test Company',
-      status: 'active',
+      tenantId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      companyCode: 'COMP-001',
       legalName: 'Test Company Inc',
-      registrationNo: '123',
-      taxId: 'T123',
-      website: 'test.com',
-      industry: 'IT',
-      size: 10,
-      logo: 'logo.png',
-      foundedDate: new Date(),
+      status: CompanyStatus.ACTIVE,
+      isTemplate: false,
+      timezone: 'UTC',
     });
     const saved = await companyRepo.save(company);
     companyId = saved.id;
@@ -66,7 +75,9 @@ describe('Department Entity', () => {
       companyId: companyId,
       code: 'HR',
       name: 'Human Resources',
-      isDivision: false,
+      description: 'HR Department',
+      status: MasterDataStatus.ACTIVE,
+      effectiveAt: new Date('2026-01-01'),
     });
 
     const saved = await repository.save(department);
@@ -76,7 +87,7 @@ describe('Department Entity', () => {
     expect(retrieved).toBeDefined();
     expect(retrieved?.name).toBe('Human Resources');
     expect(retrieved?.code).toBe('HR');
-    expect(retrieved?.isDivision).toBe(false);
+    expect(retrieved?.status).toBe(MasterDataStatus.ACTIVE);
   });
 
   it('should support parent-child self-referential relationship', async () => {
@@ -87,7 +98,8 @@ describe('Department Entity', () => {
       companyId: companyId,
       code: 'ENG',
       name: 'Engineering',
-      isDivision: true,
+      status: MasterDataStatus.ACTIVE,
+      effectiveAt: new Date('2026-01-01'),
     });
     const savedParent = await repository.save(parent);
 
@@ -96,17 +108,18 @@ describe('Department Entity', () => {
       companyId: companyId,
       code: 'QA',
       name: 'Quality Assurance',
-      isDivision: false,
-      parentId: savedParent.id,
+      parentDepartmentId: savedParent.id,
+      status: MasterDataStatus.ACTIVE,
+      effectiveAt: new Date('2026-01-01'),
     });
     const savedChild = await repository.save(child);
 
     const retrievedChild = await repository.findOne({
       where: { id: savedChild.id },
-      relations: ['parent'],
+      relations: ['parentDepartment'],
     });
 
     expect(retrievedChild).toBeDefined();
-    expect(retrievedChild?.parent?.id).toBe(savedParent.id);
+    expect(retrievedChild?.parentDepartment?.id).toBe(savedParent.id);
   });
 });

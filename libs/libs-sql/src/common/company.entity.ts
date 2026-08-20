@@ -1,5 +1,11 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+} from 'typeorm';
 import { BaseEntity } from '../base.entity';
+import { CompanyStatus } from './enums';
 import { Department } from './department.entity';
 import { Grade } from './grade.entity';
 import { JobTitle } from './job-title.entity';
@@ -7,74 +13,70 @@ import { Location } from './location.entity';
 
 @Entity('companies')
 export class Company extends BaseEntity {
-  @Column({ name: 'name', type: 'varchar', length: 255 })
-  name: string;
+  @Column({ name: 'tenant_id', type: 'uuid', nullable: true })
+  tenantId?: string;
 
-  @Index('idx_company_status')
-  @Column({ name: 'status', type: 'varchar', length: 32, default: 'pending' })
-  status: 'pending' | 'active' | 'inactive';
+  @Column({ name: 'company_code', type: 'varchar', length: 64 })
+  companyCode: string;
 
   @Column({ name: 'legal_name', type: 'varchar', length: 255 })
   legalName: string;
 
-  @Column({ name: 'registration_no', type: 'varchar', length: 100 })
-  registrationNo: string;
+  @Column({ name: 'display_name', type: 'varchar', length: 255, nullable: true })
+  displayName?: string | null;
 
-  @Column({ name: 'tax_id', type: 'varchar', length: 100 })
-  taxId: string;
+  @Index('idx_company_status')
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: 32,
+    default: CompanyStatus.PENDING,
+  })
+  status: CompanyStatus;
 
-  @Column({ name: 'website', type: 'varchar', length: 255 })
-  website: string;
+  @Column({ name: 'is_template', type: 'boolean', default: false })
+  isTemplate: boolean;
 
-  @Column({ name: 'industry', type: 'varchar', length: 64 })
-  industry: string;
+  @Column({ name: 'registration_number', type: 'varchar', length: 128, nullable: true })
+  registrationNumber?: string | null;
 
-  @Column({ name: 'size', type: 'integer' })
-  size: number;
+  @Column({ name: 'tax_registration_number', type: 'varchar', length: 128, nullable: true })
+  taxRegistrationNumber?: string | null;
 
-  @Column({ name: 'logo', type: 'varchar', length: 256 })
-  logo: string;
+  @Column({ name: 'country_code', type: 'char', length: 2, nullable: true })
+  countryCode?: string | null;
 
-  @Column({ name: 'founded_date', type: 'date' })
-  foundedDate: Date;
+  @Column({ name: 'legal_address', type: 'jsonb', nullable: true })
+  legalAddress?: Record<string, unknown> | null;
 
-  @Column({ name: 'holding_id', type: 'uuid', nullable: true })
-  holdingId?: string | null;
+  @Column({ name: 'timezone', type: 'varchar', length: 64, default: 'UTC' })
+  timezone: string;
 
-  // Embedded Contact
-  @Column({ name: 'contact_name', type: 'varchar', length: 255, nullable: true })
-  contactName?: string | null;
+  @Column({ name: 'locale', type: 'varchar', length: 32, nullable: true })
+  locale?: string | null;
 
-  @Column({ name: 'contact_email', type: 'varchar', length: 255, nullable: true })
-  contactEmail?: string | null;
+  @Column({ name: 'currency_code', type: 'char', length: 3, nullable: true })
+  currencyCode?: string | null;
 
-  @Column({ name: 'contact_phone', type: 'varchar', length: 64, nullable: true })
-  contactPhone?: string | null;
+  @Column({ name: 'information_completed_at', type: 'timestamptz', nullable: true })
+  informationCompletedAt?: Date | null;
 
-  @Column({ name: 'contact_title', type: 'varchar', length: 255, nullable: true })
-  contactTitle?: string | null;
+  @Column({ name: 'information_completed_by', type: 'uuid', nullable: true })
+  informationCompletedBy?: string | null;
 
-  // Embedded Secondary Contact
-  @Column({ name: 'secondary_contact_name', type: 'varchar', length: 255, nullable: true })
-  secondaryContactName?: string | null;
+  @Column({ name: 'activated_at', type: 'timestamptz', nullable: true })
+  activatedAt?: Date | null;
 
-  @Column({ name: 'secondary_contact_email', type: 'varchar', length: 255, nullable: true })
-  secondaryContactEmail?: string | null;
+  @Column({ name: 'activated_by', type: 'uuid', nullable: true })
+  activatedBy?: string | null;
 
-  @Column({ name: 'secondary_contact_phone', type: 'varchar', length: 64, nullable: true })
-  secondaryContactPhone?: string | null;
+  @Column({ name: 'created_by', type: 'uuid', nullable: true })
+  createdBy?: string | null;
 
-  @Column({ name: 'secondary_contact_title', type: 'varchar', length: 255, nullable: true })
-  secondaryContactTitle?: string | null;
+  @Column({ name: 'updated_by', type: 'uuid', nullable: true })
+  updatedBy?: string | null;
 
   // Relationships
-  @ManyToOne(() => Company, (company) => company.subsidiaries, { nullable: true })
-  @JoinColumn({ name: 'holding_id' })
-  holding?: Company | null;
-
-  @OneToMany(() => Company, (company) => company.holding)
-  subsidiaries?: Company[];
-
   @OneToMany(() => Department, (dept) => dept.company)
   departments?: Department[];
 
