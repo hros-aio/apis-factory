@@ -40,9 +40,11 @@ describe('RequestContextService', () => {
     expect(results[2]?.traceId).toBe('trace-C');
   });
 
-  it('should return null when accessed outside an active context execution', () => {
+  it('should return default values when accessed outside an active context execution', () => {
     expect(RequestContextService.current()).toBeNull();
-    expect(RequestContextService.getTraceId()).toBeNull();
-    expect(RequestContextService.getTenantCode()).toBeNull();
+    expect(RequestContextService.getTraceId()).toBe(RequestContextService.DEFAULT_TRACE_ID);
+    expect(RequestContextService.getRequestId()).toBe(RequestContextService.DEFAULT_REQUEST_ID);
+    expect(RequestContextService.getTenantCode()).toBe(RequestContextService.DEFAULT_TENANT_CODE);
+    expect(RequestContextService.getUser()).toEqual(RequestContextService.DEFAULT_USER);
   });
 });
