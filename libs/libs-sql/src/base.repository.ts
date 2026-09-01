@@ -1,18 +1,23 @@
 import { RequestContextService } from '@new-hros/libs-core';
-import { DeepPartial, FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { PaginatedResult, PaginationOptions, buildPaginatedResult } from './pagination';
 import { TransactionService } from './transaction.service';
 
-export interface QueryOneOptions {
+export interface QueryOneOptions<Entity = any> extends FindOneOptions<Entity> {
   required?: boolean;
 }
 
-export interface QueryManyOptions {
+export interface QueryManyOptions<Entity = any> extends FindManyOptions<Entity> {
   onlyIds?: boolean;
   pagination?: PaginationOptions;
-  cache?: boolean;
-  withDeleted?: boolean;
 }
 
 export abstract class BaseRepository<Entity extends BaseEntity> {
@@ -33,8 +38,14 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
     return code;
   }
 
-  private applyTenantScope(where?: FindOptionsWhere<Entity>): FindOptionsWhere<Entity> {
-    const scope: any = { tenantCode: this.tenantCode };
+  private applyTenantScope(where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[]): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] {
+    const scope = { tenantCode: this.tenantCode };
+    if (Array.isArray(where)) {
+      if (where.length === 0) {
+        return scope as unknown as FindOptionsWhere<Entity>;
+      }
+      return where.map((w) => ({ ...w, ...scope } as FindOptionsWhere<Entity>));
+    }
     return { ...(where || {}), ...scope } as FindOptionsWhere<Entity>;
   }
 
@@ -50,28 +61,38 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
   async findOne(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
   async findOne(
     where: FindOptionsWhere<Entity>,
-    options: QueryOneOptions & { required: true },
+    options: QueryOneOptions<Entity> & { required: true },
   ): Promise<Entity>;
   async findOne(
     where: FindOptionsWhere<Entity>,
-    options?: QueryOneOptions,
+    options?: QueryOneOptions<Entity>,
+  ): Promise<Entity | null>;
+  async findOne(
+    where: FindOptionsWhere<Entity>,
+    options?: QueryOneOptions<Entity>,
   ): Promise<Entity | null> {
+    const { required, where: optionsWhere, ...restOptions } = options || {};
+    const mergedWhere = optionsWhere || where;
     const data = await this.repository.findOne({
-      where: this.applyTenantScope(where),
+      ...restOptions,
+      where: this.applyTenantScope(mergedWhere),
     });
-    if (!data && options?.required) {
-      throw new Error(`Record not found with query: ${where}`);
+    if (!data && required) {
+      throw new Error(`Record not found with query: ${JSON.stringify(where)}`);
     }
     return data || null;
   }
 
   async findById(id: string): Promise<Entity | null>;
-  async findById(id: string, options: QueryOneOptions & { required: true }): Promise<Entity>;
-  async findById(id: string, options?: QueryOneOptions): Promise<Entity | null> {
+  async findById(id: string, options: QueryOneOptions<Entity> & { required: true }): Promise<Entity>;
+  async findById(id: string, options?: QueryOneOptions<Entity>): Promise<Entity | null>;
+  async findById(id: string, options?: QueryOneOptions<Entity>): Promise<Entity | null> {
+    const { required, where: _ignoredWhere, ...restOptions } = options || {};
     const data = await this.repository.findOne({
-      where: this.applyTenantScope({ id } as FindOptionsWhere<Entity>),
+      ...restOptions,
+      where: this.applyTenantScope({ id } as unknown as FindOptionsWhere<Entity>),
     });
-    if (!data && options?.required) {
+    if (!data && required) {
       throw new Error(`Record not found with ID: ${id}`);
     }
     return data || null;
@@ -97,17 +118,24 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
   async find(where: FindOptionsWhere<Entity>): Promise<Entity[]>;
   async find(
     where: FindOptionsWhere<Entity>,
-    options: QueryManyOptions & { onlyIds: true },
+    options: QueryManyOptions<Entity> & { onlyIds: true },
   ): Promise<string[]>;
   async find(
     where: FindOptionsWhere<Entity>,
-    options: QueryManyOptions & { pagination: PaginationOptions },
+    options: QueryManyOptions<Entity> & { pagination: PaginationOptions },
   ): Promise<PaginatedResult<Entity>>;
-  async find(where: FindOptionsWhere<Entity>, options?: QueryManyOptions) {
+  async find(
+    where: FindOptionsWhere<Entity>,
+    options?: QueryManyOptions<Entity>,
+  ): Promise<Entity[]>;
+  async find(where: FindOptionsWhere<Entity>, options?: QueryManyOptions<Entity>) {
     if (options?.onlyIds) {
+      const { onlyIds: _ignoredOnlyIds, pagination: _ignoredPagination, where: optionsWhere, ...restOptions } = options;
+      const mergedWhere = optionsWhere || where;
       const data = await this.repository.find({
-        select: { id: true } as FindOptionsSelect<Entity>,
-        where: this.applyTenantScope(where),
+        ...restOptions,
+        select: { id: true } as unknown as FindOptionsSelect<Entity>,
+        where: this.applyTenantScope(mergedWhere),
       });
       return data.map((item) => item.id);
     }
@@ -116,9 +144,12 @@ export abstract class BaseRepository<Entity extends BaseEntity> {
       return this.findPaginated(options.pagination, where);
     }
 
+    const { where: optionsWhere, ...restOptions } = options || {};
+    const mergedWhere = optionsWhere || where;
+
     return this.repository.find({
-      ...options,
-      where: this.applyTenantScope(where),
+      ...restOptions,
+      where: this.applyTenantScope(mergedWhere),
     });
   }
 
