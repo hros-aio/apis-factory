@@ -1,12 +1,12 @@
-import { TraceMiddleware } from '../src/middleware/trace.middleware';
 import { RequestContextService } from '@new-hros/libs-core';
 import { Request, Response } from 'express';
+import { ContextMiddleware } from '../src/middleware';
 
-describe('TraceMiddleware', () => {
-  let middleware: TraceMiddleware;
+describe('ContextMiddleware', () => {
+  let middleware: ContextMiddleware;
 
   beforeEach(() => {
-    middleware = new TraceMiddleware();
+    middleware = new ContextMiddleware();
   });
 
   it('should initialize and propagate trace context from headers', (done) => {

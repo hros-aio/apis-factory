@@ -57,7 +57,6 @@ describe('Company Entity', () => {
     const repository = dataSource.getRepository(Company);
     const company = repository.create({
       tenantCode: 'tenant-123',
-      tenantId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       companyCode: 'COMP-001',
       legalName: 'Acme Corporation Inc.',
       displayName: 'Acme Corp',

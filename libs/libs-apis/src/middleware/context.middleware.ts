@@ -1,20 +1,18 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { RequestContextService, RequestContext } from '@new-hros/libs-core';
+import { RequestContext, RequestContextService } from '@new-hros/libs-core';
 import * as crypto from 'crypto';
+import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
-export class TraceMiddleware implements NestMiddleware {
+export class ContextMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const traceId = (req.headers['x-trace-id'] as string) || crypto.randomUUID();
     const requestId = (req.headers['x-request-id'] as string) || crypto.randomUUID();
     const tenantCode = (req.headers['x-tenant-code'] as string) || 'default';
-    const serviceName = 'api-service';
 
     const context: RequestContext = {
       traceId,
       requestId,
-      serviceName,
       tenantCode,
       requestTimestamp: new Date(),
       clientMetadata: {

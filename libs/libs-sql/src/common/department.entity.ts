@@ -14,9 +14,6 @@ import { MasterDataStatus } from './enums';
 @Entity('departments')
 @Index('idx_departments_parent', ['parentDepartmentId'])
 export class Department extends BaseEntity {
-  @Column({ name: 'tenant_id', type: 'uuid', nullable: true })
-  tenantId?: string;
-
   @Column({ name: 'company_id', type: 'uuid' })
   companyId: string;
 

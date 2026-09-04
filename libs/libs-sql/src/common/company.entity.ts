@@ -13,9 +13,6 @@ import { Location } from './location.entity';
 
 @Entity('companies')
 export class Company extends BaseEntity {
-  @Column({ name: 'tenant_id', type: 'uuid', nullable: true })
-  tenantId?: string;
-
   @Column({ name: 'company_code', type: 'varchar', length: 64 })
   companyCode: string;
 
