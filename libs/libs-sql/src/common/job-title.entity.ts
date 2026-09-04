@@ -7,9 +7,6 @@ import { MasterDataStatus } from './enums';
 
 @Entity('job_titles')
 export class JobTitle extends BaseEntity {
-  @Column({ name: 'tenant_id', type: 'uuid', nullable: true })
-  tenantId?: string;
-
   @Column({ name: 'company_id', type: 'uuid' })
   companyId: string;
 

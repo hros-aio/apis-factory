@@ -15,8 +15,8 @@ import { AuditInterceptor } from './interceptors/audit.interceptor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { MetricsInterceptor } from './interceptors/metrics.interceptor';
 import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
+import { ContextMiddleware } from './middleware/context.middleware';
 import { RequestLogMiddleware } from './middleware/request-log.middleware';
-import { TraceMiddleware } from './middleware/trace.middleware';
 import { PlatformValidationPipe } from './pipes/validation.pipe';
 
 import { API_MODULE_OPTIONS_TOKEN, TIMEOUT_MS_TOKEN } from './apis.constants';
@@ -25,7 +25,7 @@ export { API_MODULE_OPTIONS_TOKEN, TIMEOUT_MS_TOKEN };
 @Module({})
 export class ApisModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TraceMiddleware, RequestLogMiddleware).forRoutes('*');
+    consumer.apply(ContextMiddleware, RequestLogMiddleware).forRoutes('*');
   }
 
   static forRoot(options: ApisModuleOptions = {}): DynamicModule {

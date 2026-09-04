@@ -50,7 +50,6 @@ describe('Grade Entity', () => {
     const companyRepo = dataSource.getRepository(Company);
     const company = companyRepo.create({
       tenantCode: 'tenant-123',
-      tenantId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       companyCode: 'COMP-001',
       legalName: 'Test Company Inc',
       status: CompanyStatus.ACTIVE,

@@ -7,7 +7,6 @@ describe('RequestContextService', () => {
       const mockContext: RequestContext = {
         traceId: `trace-${id}`,
         requestId: `req-${id}`,
-        serviceName: 'test-service',
         tenantCode: `tenant-${id}`,
         requestTimestamp: new Date(),
         clientMetadata: { ip: '127.0.0.1' },

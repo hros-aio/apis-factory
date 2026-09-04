@@ -36,7 +36,6 @@ describe('Mongoose Tenant and Soft Delete Plugins', () => {
     const ctx: RequestContext = {
       traceId: 'trace-123',
       requestId: 'req-456',
-      serviceName: 'test',
       tenantCode: 'tenant-abc',
       requestTimestamp: new Date(),
       clientMetadata: { ip: '127.0.0.1' },
@@ -60,7 +59,6 @@ describe('Mongoose Tenant and Soft Delete Plugins', () => {
     const ctx: RequestContext = {
       traceId: 'trace-123',
       requestId: 'req-456',
-      serviceName: 'test',
       tenantCode: 'tenant-abc',
       requestTimestamp: new Date(),
       clientMetadata: { ip: '127.0.0.1' },
