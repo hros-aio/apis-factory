@@ -9,7 +9,6 @@ import {
   RequestContextService,
   UnauthorizedException,
 } from '@new-hros/libs-core';
-import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,32 +27,24 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
-    const sessionId = request.sessionId;
-    if (!sessionId) {
-      throw new UnauthorizedException('Authentication context is missing');
+    const requestCtx = RequestContextService.current();
+    if (!requestCtx?.user?.sessionId) {
+      throw new UnauthorizedException('Session identifier is missing');
     }
 
-    const cacheKey = CACHE_KEY_BUILDER.session(sessionId);
-    const sessionData = await this.cacheService.get<{ user: AuthContext }>(cacheKey);
+    const cacheKey = CACHE_KEY_BUILDER.buildSession(requestCtx.user.sessionId);
+    const sessionData = await this.cacheService.get<AuthContext>(cacheKey);
 
-    if (!sessionData || !sessionData.user) {
+    if (!sessionData) {
       throw new UnauthorizedException('Session is invalid or expired');
     }
 
-    const contextTenantCode = RequestContextService.getTenantCode();
-    if (request.tenantCode !== contextTenantCode) {
+    if (requestCtx.tenantCode !== sessionData.tenantCode) {
       throw new PermissionDeniedException('Tenant context boundary violation');
     }
 
-    // Attach session user context to the request object
-    request.user = sessionData.user;
-
-    const requestCtx = RequestContextService.current();
-    if (requestCtx) {
-      requestCtx.user = request.user;
-      requestCtx.tenantCode = request.tenantCode;
-    }
+    // Attach session user context to the request context
+    requestCtx.user = sessionData;
 
     return true;
   }

@@ -7,3 +7,4 @@ export * from './health';
 export * from './exceptions';
 export * from './interfaces';
 export * from './core.module';
+export * from './evaluator';
