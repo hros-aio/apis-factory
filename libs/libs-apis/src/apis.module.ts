@@ -1,11 +1,6 @@
 import { DynamicModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import {
-  ApisModuleAsyncOptions,
-  ApisModuleOptions,
-  CACHE_PROVIDER_TOKEN,
-  CacheProvider,
-} from '@new-hros/libs-core';
+import { ApisModuleAsyncOptions, ApisModuleOptions, CacheService } from '@new-hros/libs-core';
 import { JwtService } from './auth/jwt.service';
 import { GlobalHttpExceptionFilter } from './filters/exception.filter';
 import { AuthGuard } from './guards/auth.guard';
@@ -50,13 +45,13 @@ export class ApisModule implements NestModule {
         },
         {
           provide: APP_GUARD,
-          useFactory: (cacheProvider: CacheProvider) => {
-            return new RateLimitGuard(cacheProvider, {
+          useFactory: (cacheService: CacheService) => {
+            return new RateLimitGuard(cacheService, {
               limit: options.rateLimit?.limit ?? 100,
               windowSeconds: options.rateLimit?.windowSeconds ?? 60,
             });
           },
-          inject: [CACHE_PROVIDER_TOKEN],
+          inject: [CacheService],
         },
         {
           provide: APP_FILTER,
@@ -114,13 +109,13 @@ export class ApisModule implements NestModule {
         },
         {
           provide: APP_GUARD,
-          useFactory: (cacheProvider: CacheProvider, apisOpts: ApisModuleOptions) => {
-            return new RateLimitGuard(cacheProvider, {
+          useFactory: (cacheService: CacheService, apisOpts: ApisModuleOptions) => {
+            return new RateLimitGuard(cacheService, {
               limit: apisOpts.rateLimit?.limit ?? 100,
               windowSeconds: apisOpts.rateLimit?.windowSeconds ?? 60,
             });
           },
-          inject: [CACHE_PROVIDER_TOKEN, API_MODULE_OPTIONS_TOKEN],
+          inject: [CacheService, API_MODULE_OPTIONS_TOKEN],
         },
         {
           provide: APP_FILTER,

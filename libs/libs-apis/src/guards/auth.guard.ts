@@ -42,7 +42,6 @@ export class AuthGuard implements CanActivate {
     }
 
     // Attach session user context to the request context
-    requestCtx.user = sessionData;
     RequestContextService.set('user', sessionData)
 
     return true;

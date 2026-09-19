@@ -1,11 +1,10 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { BusinessException, CACHE_PROVIDER_TOKEN, CacheProvider } from '@new-hros/libs-core';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { BusinessException, CacheService } from '@new-hros/libs-core';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   constructor(
-    @Inject(CACHE_PROVIDER_TOKEN)
-    private readonly cacheProvider: CacheProvider,
+    private readonly cacheProvider: CacheService,
     private readonly options: { limit: number; windowSeconds: number } = {
       limit: 100,
       windowSeconds: 60,

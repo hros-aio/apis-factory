@@ -21,10 +21,8 @@ export const CACHE_KEY_BUILDER = {
   },
   buildUserAuthz: (tenantCode: string, userId: string) =>
     `${CACHE_NAMESPACE.USER_AUTHZ}:${tenantCode}:${userId}`,
-  buildRoleAuthz: (tenantCode: string, roleId: string) => 
-    `${CACHE_NAMESPACE.ROLE_AUTHZ}:${tenantCode}:${roleId}`
+  buildRoleAuthz: (tenantCode: string, roleId: string) =>
+    `${CACHE_NAMESPACE.ROLE_AUTHZ}:${tenantCode}:${roleId}`,
 };
 
 export const CACHE_MODULE_OPTIONS_TOKEN = Symbol('CACHE_MODULE_OPTIONS');
-
-export const CACHE_PROVIDER_TOKEN = Symbol('CACHE_PROVIDER');
