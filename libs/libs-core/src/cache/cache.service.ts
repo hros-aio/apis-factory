@@ -48,4 +48,23 @@ export class CacheService {
   async flushNamespace(pattern: string): Promise<void> {
     await Promise.all([this.l1.flushNamespace(pattern), this.l2.flushNamespace(pattern)]);
   }
+
+  async executeIfAbsent<T>(
+    key: string,
+    cb: () => Promise<T>,
+    ttl: number,
+  ): Promise<{ executed: boolean; result?: T }> {
+    const alreadyProcessed = await this.get<boolean>(key);
+    if (alreadyProcessed) {
+      return { executed: false };
+    }
+
+    try {
+      const result = await cb();
+      await this.set(key, true, ttl);
+      return { executed: true, result };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
