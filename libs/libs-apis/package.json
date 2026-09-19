@@ -1,6 +1,6 @@
 {
   "name": "@new-hros/libs-apis",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "NestJS multi-tenant platform foundation - API Platform Layer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
