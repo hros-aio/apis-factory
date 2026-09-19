@@ -29,6 +29,16 @@ export class RequestContextService {
     return this.storage.getStore() || null;
   }
 
+  static set<K extends keyof RequestContext>(key: K, value: RequestContext[K]): void {
+    const context = this.current();
+
+    if (!context) {
+      return;
+    }
+
+    context[key] = value;
+  }
+
   static getTraceId(): string {
     return this.current()?.traceId || this.DEFAULT_TRACE_ID;
   }
