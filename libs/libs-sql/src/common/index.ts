@@ -4,3 +4,4 @@ export * from './department.entity';
 export * from './location.entity';
 export * from './grade.entity';
 export * from './job-title.entity';
+export * from './outbox.entity';

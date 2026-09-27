@@ -5,13 +5,13 @@ import {
   OneToMany,
 } from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { CompanyStatus } from './enums';
+import { CompanyStatus, TableName } from './enums';
 import { Department } from './department.entity';
 import { Grade } from './grade.entity';
 import { JobTitle } from './job-title.entity';
 import { Location } from './location.entity';
 
-@Entity('companies')
+@Entity(TableName.Company)
 export class Company extends BaseEntity {
   @Column({ name: 'company_code', type: 'varchar', length: 64 })
   companyCode: string;
