@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Company } from './company.entity';
-import { MasterDataStatus } from './enums';
+import { MasterDataStatus, TableName } from './enums';
 
-@Entity('locations')
+@Entity(TableName.Location)
 export class Location extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
   companyId: string;

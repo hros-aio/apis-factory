@@ -1,6 +1,6 @@
 {
   "name": "@new-hros/libs-sql",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "NestJS multi-tenant platform foundation - SQL Database Layer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

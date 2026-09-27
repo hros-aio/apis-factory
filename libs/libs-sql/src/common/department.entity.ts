@@ -8,10 +8,10 @@ import {
 } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Company } from './company.entity';
+import { MasterDataStatus, TableName } from './enums';
 import { JobTitle } from './job-title.entity';
-import { MasterDataStatus } from './enums';
 
-@Entity('departments')
+@Entity(TableName.Department)
 @Index('idx_departments_parent', ['parentDepartmentId'])
 export class Department extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
