@@ -51,12 +51,15 @@ describe('EventPublisher', () => {
     expect(clientMock.emit).toHaveBeenCalledWith(
       'employee.created',
       expect.objectContaining({
-        id: expect.any(String),
-        topic: 'employee.created',
-        producer: expect.any(String),
-        timestamp: expect.any(String),
+        eventId: expect.any(String),
+        eventType: 'employee.created',
+        eventVersion: 1,
+        tenantCode: '',
+        occurredAt: expect.any(String),
+        producer: 'test-client-id',
         correlationId: expect.any(String),
-        version: '1.0.0',
+        causationId: null,
+        traceId: null,
         payload,
       })
     );

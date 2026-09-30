@@ -26,9 +26,11 @@ describe('KafkaRetryInterceptor', () => {
 
     rpcMock = {
       getData: jest.fn().mockReturnValue({
-        id: 'msg-123',
+        eventId: 'msg-123',
+        eventType: 'test-topic',
+        eventVersion: 1,
+        tenantCode: 'test-tenant',
         correlationId: 'corr-123',
-        version: '1.0.0',
         payload: { test: 'data' },
       }),
       getContext: jest.fn().mockReturnValue(kafkaContextMock),
@@ -94,7 +96,14 @@ describe('KafkaRetryInterceptor', () => {
     expect(publisherMock.publish).toHaveBeenCalledWith(
       'test-topic.DLQ',
       { test: 'data' },
-      { correlationId: 'corr-123', version: '1.0.0' }
+      {
+        eventType: 'test-topic',
+        eventVersion: 1,
+        tenantCode: 'test-tenant',
+        correlationId: 'corr-123',
+        causationId: 'msg-123',
+        traceId: null,
+      }
     );
   });
 });

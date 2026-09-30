@@ -17,17 +17,25 @@ export class EventPublisher {
     topic: string,
     payload: T,
     metadata?: {
-      correlationId?: string;
-      version?: string;
+      eventType?: string;
+      eventVersion?: number;
+      tenantCode?: string;
+      occurredAt?: string;
+      correlationId?: string | null;
+      causationId?: string | null;
+      traceId?: string | null;
     }
   ): Promise<void> {
     const envelope: EventEnvelope<T> = {
-      id: randomUUID(),
-      topic,
+      eventId: randomUUID(),
+      eventType: metadata?.eventType || topic,
+      eventVersion: metadata?.eventVersion ?? 1,
+      tenantCode: metadata?.tenantCode || '',
+      occurredAt: metadata?.occurredAt || new Date().toISOString(),
       producer: this.config.clientId,
-      timestamp: new Date().toISOString(),
-      version: metadata?.version || '1.0.0',
-      correlationId: metadata?.correlationId || randomUUID(),
+      correlationId: metadata?.correlationId ?? randomUUID(),
+      causationId: metadata?.causationId ?? null,
+      traceId: metadata?.traceId ?? null,
       payload,
     };
 

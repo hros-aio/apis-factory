@@ -90,9 +90,11 @@ describe('Kafka Retry & DLQ Routing Integration', () => {
       getType: () => 'rpc',
       switchToRpc: () => ({
         getData: () => ({
-          id: 'test-msg-id',
+          eventId: 'test-msg-id',
+          eventType: 'employee.created',
+          eventVersion: 1,
+          tenantCode: 'default',
           correlationId: 'test-corr-id',
-          version: '1.0.0',
           payload,
         }),
         getContext: () => ({
