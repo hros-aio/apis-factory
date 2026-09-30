@@ -1,16 +1,10 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Company } from './company.entity';
+import { MasterDataStatus, TableName } from './enums';
 import { JobTitle } from './job-title.entity';
-import { MasterDataStatus } from './enums';
 
-@Entity('grades')
+@Entity(TableName.Grade)
 export class Grade extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
   companyId: string;
