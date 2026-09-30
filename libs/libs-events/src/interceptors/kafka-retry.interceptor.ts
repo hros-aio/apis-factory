@@ -42,11 +42,13 @@ export class KafkaRetryInterceptor implements NestInterceptor {
     const failedCount = ConsumerConfigStore.failedCount;
     const retryDelayMs = ConsumerConfigStore.retryDelayMs;
 
+    const eventId = data?.eventId || data?.id || 'unknown';
+
     let lastError = initialError;
 
     for (let attempt = 1; attempt < failedCount; attempt++) {
       this.logger.error(
-        `Error processing message ${data.id}. Attempt ${attempt}/${failedCount} failed. Retrying in ${retryDelayMs}ms...`,
+        `Error processing message ${eventId}. Attempt ${attempt}/${failedCount} failed. Retrying in ${retryDelayMs}ms...`,
       );
 
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
@@ -60,17 +62,21 @@ export class KafkaRetryInterceptor implements NestInterceptor {
 
     const dlqTopic = `${topic}.DLQ`;
     this.logger.error(
-      `Error processing message ${data.id}. Attempt ${failedCount}/${failedCount} failed. Routing to DLQ...`,
+      `Error processing message ${eventId}. Attempt ${failedCount}/${failedCount} failed. Routing to DLQ...`,
     );
     try {
-      await this.publisher.publish(dlqTopic, data.payload, {
-        correlationId: data.correlationId || data.id,
-        version: data.version,
+      await this.publisher.publish(dlqTopic, data?.payload ?? data, {
+        eventType: data?.eventType || `${topic}.DLQ`,
+        eventVersion: data?.eventVersion ?? 1,
+        tenantCode: data?.tenantCode || '',
+        correlationId: data?.correlationId || eventId,
+        causationId: eventId,
+        traceId: data?.traceId ?? null,
       });
-      this.logger.log(`[DLQ] Successfully routed failed message ${data.id} to topic ${dlqTopic}`);
+      this.logger.log(`[DLQ] Successfully routed failed message ${eventId} to topic ${dlqTopic}`);
     } catch (dlqError) {
       this.logger.error(
-        `[DLQ] Failed to publish message ${data.id} to DLQ topic ${dlqTopic}:`,
+        `[DLQ] Failed to publish message ${eventId} to DLQ topic ${dlqTopic}:`,
         dlqError,
       );
     }

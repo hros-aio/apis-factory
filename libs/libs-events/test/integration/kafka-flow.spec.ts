@@ -78,8 +78,7 @@ describe('Kafka Pub/Sub Flow Integration', () => {
     await publisher.publish('employee.created', payload);
 
     expect(emitSpy).toHaveBeenCalled();
-    expect(TestEmployeeController.receivedEvent).toBeDefined();
     expect(TestEmployeeController.receivedEvent?.payload).toEqual(payload);
-    expect(TestEmployeeController.receivedEvent?.topic).toBe('employee.created');
+    expect(TestEmployeeController.receivedEvent?.eventType).toBe('employee.created');
   });
 });

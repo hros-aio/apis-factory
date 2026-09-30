@@ -77,7 +77,7 @@ import { EventEnvelope } from '@new-hros/libs-events';
 export class EmployeeController {
   @EventPattern('employee.created')
   async handleEmployeeCreated(@Payload() event: EventEnvelope<EmployeePayload>) {
-    console.log(`Received event: ${event.id}`, event.payload);
+    console.log(`Received event: ${event.eventId}`, event.payload);
   }
 }
 ```
@@ -96,7 +96,9 @@ export class EmployeeService {
 
   async createEmployee(data: any) {
     await this.publisher.publish('employee.created', data, {
-      version: '1.0.0',
+      tenantCode: 'default',
+      eventType: 'employee.created',
+      eventVersion: 1,
     });
   }
 }
