@@ -5,8 +5,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { CompanyStatus, TableName } from './enums';
 import { Department } from './department.entity';
+import { CompanyStatus, TableName } from './enums';
 import { Grade } from './grade.entity';
 import { JobTitle } from './job-title.entity';
 import { Location } from './location.entity';

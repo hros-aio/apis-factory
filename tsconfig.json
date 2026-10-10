@@ -17,6 +17,7 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@new-hros/libs-core": ["libs/libs-core/src"],
