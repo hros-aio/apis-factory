@@ -1,5 +1,6 @@
 import {
   DynamicModule,
+  Injectable,
   Module,
   OnApplicationShutdown,
   Provider,
@@ -16,14 +17,12 @@ import {
 } from './cognito.module-definition';
 import {
   COGNITO_CLIENT,
-  COGNITO_SERVICE,
-  COGNITO_AUTH_SERVICE,
   getCognitoClientToken,
   getCognitoOptionsToken,
   getCognitoServiceToken,
   getCognitoAuthServiceToken,
 } from './cognito.constants';
-import { CognitoModuleOptions, CognitoModuleAsyncOptions } from './cognito.types';
+import { CognitoModuleOptions } from './cognito.types';
 import { CognitoService } from './cognito.service';
 import { CognitoAuthService } from './cognito-auth.service';
 
@@ -41,13 +40,38 @@ function createCognitoClient(options: CognitoModuleOptions): CognitoIdentityProv
   return new CognitoIdentityProviderClient(config);
 }
 
+/**
+ * Context-scoped manager that tracks and destroys the AWS Cognito client
+ * when the owning application context shuts down.
+ */
+@Injectable()
+export class CognitoClientManager implements OnApplicationShutdown {
+  private client?: CognitoIdentityProviderClient;
+
+  setClient(client: CognitoIdentityProviderClient): void {
+    this.client = client;
+  }
+
+  getClient(): CognitoIdentityProviderClient | undefined {
+    return this.client;
+  }
+
+  onApplicationShutdown(): void {
+    if (this.client) {
+      try {
+        this.client.destroy();
+      } catch {
+        // Suppress cleanup errors
+      }
+    }
+  }
+}
+
 @Module({})
 export class CognitoModule
   extends ConfigurableModuleClass
   implements OnApplicationShutdown
 {
-  private static readonly activeClients = new Set<CognitoIdentityProviderClient>();
-
   static forRoot(options: typeof COGNITO_OPTIONS_TYPE): DynamicModule {
     const dynamicModule = super.forRoot(options);
     return CognitoModule.enhanceModule(dynamicModule, options.instanceName);
@@ -55,35 +79,55 @@ export class CognitoModule
 
   static forRootAsync(options: typeof COGNITO_ASYNC_OPTIONS_TYPE): DynamicModule {
     const dynamicModule = super.forRootAsync(options);
-    return CognitoModule.enhanceModule(dynamicModule, (options as { instanceName?: string }).instanceName);
+    return CognitoModule.enhanceModule(dynamicModule, options.instanceName);
   }
 
   private static enhanceModule(
     dynamicModule: DynamicModule,
     instanceName?: string,
   ): DynamicModule {
-    const clientProvider: Provider = {
-      provide: COGNITO_CLIENT,
-      useFactory: (opts: CognitoModuleOptions) => {
-        const client = createCognitoClient(opts);
-        CognitoModule.activeClients.add(client);
-        return client;
-      },
-      inject: [COGNITO_MODULE_OPTIONS_TOKEN],
+    const clientManagerProvider: Provider = {
+      provide: CognitoClientManager,
+      useClass: CognitoClientManager,
     };
 
+    const clientProvider: Provider = {
+      provide: COGNITO_CLIENT,
+      useFactory: (opts: CognitoModuleOptions, manager: CognitoClientManager) => {
+        const client = createCognitoClient(opts);
+        manager.setClient(client);
+        return client;
+      },
+      inject: [COGNITO_MODULE_OPTIONS_TOKEN, CognitoClientManager],
+    };
+
+    const baseServiceToken = getCognitoServiceToken();
+    const baseAuthServiceToken = getCognitoAuthServiceToken();
+
     const providers: Provider[] = [
+      clientManagerProvider,
       clientProvider,
       CognitoService,
       CognitoAuthService,
+      {
+        provide: baseServiceToken,
+        useExisting: CognitoService,
+      },
+      {
+        provide: baseAuthServiceToken,
+        useExisting: CognitoAuthService,
+      },
     ];
 
     const exports: (Provider | string | symbol)[] = [
+      clientManagerProvider,
       clientProvider,
       CognitoService,
       CognitoAuthService,
       COGNITO_CLIENT,
       COGNITO_MODULE_OPTIONS_TOKEN,
+      baseServiceToken,
+      baseAuthServiceToken,
     ];
 
     // If multi-pool instanceName is provided, add named token aliases
@@ -128,17 +172,7 @@ export class CognitoModule
     };
   }
 
-  /**
-   * Cleans up all active AWS Cognito client connections on application shutdown.
-   */
   async onApplicationShutdown(): Promise<void> {
-    for (const client of CognitoModule.activeClients) {
-      try {
-        client.destroy();
-      } catch {
-        // Suppress cleanup errors
-      }
-    }
-    CognitoModule.activeClients.clear();
+    // Delegated to context-scoped CognitoClientManager
   }
 }

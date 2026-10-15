@@ -8,6 +8,7 @@ import {
   ConfirmForgotPasswordCommand,
   ChangePasswordCommand,
   GlobalSignOutCommand,
+  GetTokensFromRefreshTokenCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { CognitoAuthService } from './cognito-auth.service';
 import { CognitoModuleOptions } from './cognito.types';
@@ -225,7 +226,7 @@ describe('CognitoAuthService', () => {
   });
 
   describe('refreshToken', () => {
-    it('should execute REFRESH_TOKEN_AUTH flow and return fresh tokens', async () => {
+    it('should execute REFRESH_TOKEN_AUTH flow and return fresh tokens when username and secret are provided without rotation', async () => {
       mockSend.mockResolvedValueOnce({
         AuthenticationResult: {
           AccessToken: 'refreshed-access-token',
@@ -250,7 +251,57 @@ describe('CognitoAuthService', () => {
       expect(tokens.refreshToken).toBe('rotated-refresh-token');
     });
 
-    it('should fallback to input refresh token if Cognito does not rotate the refresh token', async () => {
+    it('should use GetTokensFromRefreshTokenCommand when refreshTokenRotation is true on input', async () => {
+      mockSend.mockResolvedValueOnce({
+        AuthenticationResult: {
+          AccessToken: 'rotated-access-token',
+          IdToken: 'rotated-id-token',
+          RefreshToken: 'new-rotated-refresh-token',
+          ExpiresIn: 3600,
+        },
+      });
+
+      const tokens = await service.refreshToken({
+        refreshToken: 'current-refresh-token',
+        refreshTokenRotation: true,
+      });
+
+      const command = mockSend.mock.calls[0][0];
+      expect(command).toBeInstanceOf(GetTokensFromRefreshTokenCommand);
+      expect(command.input.ClientId).toBe(clientId);
+      expect(command.input.RefreshToken).toBe('current-refresh-token');
+      expect(command.input.ClientSecret).toBe(clientSecret);
+
+      expect(tokens.accessToken).toBe('rotated-access-token');
+      expect(tokens.refreshToken).toBe('new-rotated-refresh-token');
+    });
+
+    it('should use GetTokensFromRefreshTokenCommand when refreshTokenRotation is enabled on module options', async () => {
+      const rotatingService = new CognitoAuthService(
+        { ...optionsWithSecret, refreshTokenRotation: true },
+        mockClient,
+      );
+
+      mockSend.mockResolvedValueOnce({
+        AuthenticationResult: {
+          AccessToken: 'rotated-access-token-2',
+          IdToken: 'rotated-id-token-2',
+          RefreshToken: 'new-refresh-token-2',
+          ExpiresIn: 3600,
+        },
+      });
+
+      const tokens = await rotatingService.refreshToken({
+        refreshToken: 'current-refresh-token-2',
+      });
+
+      const command = mockSend.mock.calls[0][0];
+      expect(command).toBeInstanceOf(GetTokensFromRefreshTokenCommand);
+      expect(command.input.RefreshToken).toBe('current-refresh-token-2');
+      expect(tokens.accessToken).toBe('rotated-access-token-2');
+    });
+
+    it('should use GetTokensFromRefreshTokenCommand when clientSecret is configured without username', async () => {
       mockSend.mockResolvedValueOnce({
         AuthenticationResult: {
           AccessToken: 'refreshed-access-token',
@@ -263,7 +314,34 @@ describe('CognitoAuthService', () => {
         refreshToken: 'retained-refresh-token',
       });
 
+      const command = mockSend.mock.calls[0][0];
+      expect(command).toBeInstanceOf(GetTokensFromRefreshTokenCommand);
+      expect(command.input.ClientId).toBe(clientId);
+      expect(command.input.ClientSecret).toBe(clientSecret);
       expect(tokens.refreshToken).toBe('retained-refresh-token');
+    });
+
+    it('should use InitiateAuthCommand REFRESH_TOKEN_AUTH without secret hash when clientSecret is not configured', async () => {
+      const publicClientService = new CognitoAuthService(optionsWithoutSecret, mockClient);
+
+      mockSend.mockResolvedValueOnce({
+        AuthenticationResult: {
+          AccessToken: 'public-access-token',
+          IdToken: 'public-id-token',
+          ExpiresIn: 3600,
+        },
+      });
+
+      const tokens = await publicClientService.refreshToken({
+        refreshToken: 'public-refresh-token',
+      });
+
+      const command = mockSend.mock.calls[0][0];
+      expect(command).toBeInstanceOf(InitiateAuthCommand);
+      expect(command.input.AuthFlow).toBe('REFRESH_TOKEN_AUTH');
+      expect(command.input.AuthParameters.REFRESH_TOKEN).toBe('public-refresh-token');
+      expect(command.input.AuthParameters.SECRET_HASH).toBeUndefined();
+      expect(tokens.accessToken).toBe('public-access-token');
     });
   });
 

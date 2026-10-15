@@ -15,6 +15,7 @@ import {
   ChangePasswordCommandOutput,
   GlobalSignOutCommand,
   GlobalSignOutCommandOutput,
+  GetTokensFromRefreshTokenCommand,
   AttributeType,
   ChallengeNameType,
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -176,10 +177,42 @@ export class CognitoAuthService {
 
   /**
    * Refreshes access and ID tokens using a refresh token.
+   * Supports both rotating clients (using GetTokensFromRefreshTokenCommand) and
+   * non-rotating clients (retaining InitiateAuthCommand REFRESH_TOKEN_AUTH).
+   * When clientSecret is configured without a username, delegates to GetTokensFromRefreshTokenCommand
+   * which accepts the client secret directly.
    */
   async refreshToken(input: RefreshTokenInput): Promise<CognitoTokens> {
     try {
       const clientId = this.getClientId();
+      const isRotation = input.refreshTokenRotation ?? this.options.refreshTokenRotation ?? false;
+
+      // Rotating clients, or when clientSecret is configured without an explicit username
+      // (GetTokensFromRefreshTokenCommand accepts clientSecret directly without requiring SECRET_HASH)
+      if (isRotation || (this.options.clientSecret && !input.username)) {
+        const command = new GetTokensFromRefreshTokenCommand({
+          ClientId: clientId,
+          RefreshToken: input.refreshToken,
+          ClientSecret: this.options.clientSecret,
+          ClientMetadata: input.clientMetadata,
+        });
+
+        const response = await this.client.send(command);
+
+        if (!response.AuthenticationResult) {
+          throw new CognitoInternalException('RefreshToken flow did not return authentication tokens');
+        }
+
+        return {
+          accessToken: response.AuthenticationResult.AccessToken || '',
+          idToken: response.AuthenticationResult.IdToken || '',
+          refreshToken: response.AuthenticationResult.RefreshToken || input.refreshToken,
+          expiresIn: response.AuthenticationResult.ExpiresIn || 3600,
+          tokenType: response.AuthenticationResult.TokenType || 'Bearer',
+        };
+      }
+
+      // Non-rotating clients retain InitiateAuthCommand with REFRESH_TOKEN_AUTH
       const authParameters: Record<string, string> = {
         REFRESH_TOKEN: input.refreshToken,
       };

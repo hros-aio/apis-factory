@@ -113,7 +113,9 @@ Encapsulate public and user-facing authentication flows in a separate `CognitoAu
 - `CognitoAuthService` preserves this structure in the returned `CognitoAuthResult`, allowing consumers to detect the challenge and invoke `respondToChallenge()` with the session ID.
 
 ### Token Rotation
-- During `REFRESH_TOKEN_AUTH`, Cognito issues a fresh `IdToken` and `AccessToken`, and optionally a new `RefreshToken` if token rotation is enabled in the User Pool. The service returns all issued tokens transparently.
+- Rotating clients use `GetTokensFromRefreshTokenCommand`, passing `RefreshToken`, `ClientId`, and `ClientSecret` directly without requiring `SECRET_HASH` or username computation. When token rotation is enabled on the Cognito App Client, this operation issues a fresh `RefreshToken` alongside new `IdToken` and `AccessToken`, invalidating the original refresh token after the configured grace period.
+- Non-rotating clients retain `InitiateAuthCommand` with `AuthFlow: 'REFRESH_TOKEN_AUTH'`, computing HMAC-SHA256 `SECRET_HASH` when `clientSecret` and username are provided. If `clientSecret` is configured without username, the service seamlessly delegates to `GetTokensFromRefreshTokenCommand` which accepts `ClientSecret` directly.
+- The service returns all issued tokens transparently.
 
 ---
 

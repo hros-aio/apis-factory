@@ -285,5 +285,36 @@ describe('CognitoService', () => {
         service.createUser({ username: 'no-user' }),
       ).rejects.toThrow('No user data returned from Cognito');
     });
+
+    it('should map EXTERNAL_PROVIDER user status', async () => {
+      mockSend.mockResolvedValueOnce({
+        Username: 'google_12345',
+        Enabled: true,
+        UserStatus: 'EXTERNAL_PROVIDER',
+        UserAttributes: [{ Name: 'email', Value: 'external@example.com' }],
+      });
+
+      const user = await service.getUser('google_12345');
+      expect(user.userStatus).toBe('EXTERNAL_PROVIDER');
+    });
+
+    it('should use immutable userPoolId captured at construction even if options are mutated', async () => {
+      const mutableOptions: CognitoModuleOptions = {
+        region: 'us-east-1',
+        userPoolId: 'original-pool-id',
+      };
+      const testService = new CognitoService(mutableOptions, mockClient);
+      mutableOptions.userPoolId = 'tampered-pool-id';
+
+      mockSend.mockResolvedValueOnce({
+        Username: 'john.doe',
+        Enabled: true,
+        UserStatus: 'CONFIRMED',
+      });
+
+      await testService.getUser('john.doe');
+      const command = mockSend.mock.calls[0][0];
+      expect(command.input.UserPoolId).toBe('original-pool-id');
+    });
   });
 });

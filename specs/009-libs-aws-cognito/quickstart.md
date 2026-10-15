@@ -11,8 +11,8 @@
 ### Required Package Installation
 In a service consuming `@new-hros/libs-aws`:
 ```bash
-# Add workspace dependency in the consuming application or library package.json
-"@new-hros/libs-aws": "workspace:*"
+# Add dependency in the consuming application or library package.json
+"@new-hros/libs-aws": "^1.0.0"
 ```
 
 ### Environment Variables Example
@@ -136,7 +136,7 @@ export class AuthExampleService {
     }
 
     // Direct token return
-    console.log(`Access Token: ${result.tokens.accessToken}`);
+    console.log('Authentication successful');
     return result;
   }
 

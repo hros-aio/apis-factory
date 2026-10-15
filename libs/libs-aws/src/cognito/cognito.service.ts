@@ -78,6 +78,8 @@ function toUserRecord(user?: UserType | AdminGetUserCommandOutput): CognitoUserR
  */
 @Injectable()
 export class CognitoService {
+  private readonly userPoolId: string;
+
   constructor(
     @Inject(COGNITO_MODULE_OPTIONS_TOKEN) private readonly options: CognitoModuleOptions,
     @Inject(COGNITO_CLIENT) private readonly client: CognitoIdentityProviderClient,
@@ -85,6 +87,8 @@ export class CognitoService {
     if (!this.options?.userPoolId) {
       throw new Error('userPoolId must be configured in CognitoModuleOptions');
     }
+    // Capture userPoolId immutably to prevent subsequent caller mutations
+    this.userPoolId = this.options.userPoolId;
   }
 
   /**
@@ -93,7 +97,7 @@ export class CognitoService {
   async createUser(input: CreateUserInput): Promise<CognitoUserRecord> {
     try {
       const command = new AdminCreateUserCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: input.username,
         TemporaryPassword: input.temporaryPassword,
         UserAttributes: normalizeAttributes(input.userAttributes),
@@ -114,7 +118,7 @@ export class CognitoService {
   async getUser(username: string): Promise<CognitoUserRecord> {
     try {
       const command = new AdminGetUserCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
       });
 
@@ -131,7 +135,7 @@ export class CognitoService {
   async listUsers(input?: ListUsersInput): Promise<PaginatedUserList> {
     try {
       const command = new ListUsersCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Limit: input?.limit,
         PaginationToken: input?.paginationToken,
         Filter: input?.filter,
@@ -158,7 +162,7 @@ export class CognitoService {
   ): Promise<AdminUpdateUserAttributesCommandOutput> {
     try {
       const command = new AdminUpdateUserAttributesCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
         UserAttributes: normalizeAttributes(attributes),
       });
@@ -175,7 +179,7 @@ export class CognitoService {
   async deleteUser(username: string): Promise<AdminDeleteUserCommandOutput> {
     try {
       const command = new AdminDeleteUserCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
       });
 
@@ -191,7 +195,7 @@ export class CognitoService {
   async enableUser(username: string): Promise<AdminEnableUserCommandOutput> {
     try {
       const command = new AdminEnableUserCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
       });
 
@@ -207,7 +211,7 @@ export class CognitoService {
   async disableUser(username: string): Promise<AdminDisableUserCommandOutput> {
     try {
       const command = new AdminDisableUserCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
       });
 
@@ -223,7 +227,7 @@ export class CognitoService {
   async setUserPassword(input: SetUserPasswordInput): Promise<AdminSetUserPasswordCommandOutput> {
     try {
       const command = new AdminSetUserPasswordCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: input.username,
         Password: input.password,
         Permanent: input.permanent ?? false,
@@ -241,7 +245,7 @@ export class CognitoService {
   async adminSignOut(username: string): Promise<AdminUserGlobalSignOutCommandOutput> {
     try {
       const command = new AdminUserGlobalSignOutCommand({
-        UserPoolId: this.options.userPoolId,
+        UserPoolId: this.userPoolId,
         Username: username,
       });
 

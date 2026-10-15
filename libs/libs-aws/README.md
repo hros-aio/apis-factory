@@ -45,7 +45,7 @@ Add `@new-hros/libs-aws` to your application dependencies:
 ```json
 {
   "dependencies": {
-    "@new-hros/libs-aws": "workspace:*",
+    "@new-hros/libs-aws": "^1.0.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.500.0"
   }
 }
@@ -183,7 +183,7 @@ export class AuthenticationService {
     }
 
     // Direct token authentication
-    console.log(`Access Token: ${result.tokens.accessToken}`);
+    console.log('Authentication successful');
     return result;
   }
 
@@ -211,7 +211,7 @@ export class AuthenticationService {
 To configure multiple distinct Cognito User Pools in the same application:
 
 ```typescript
-import { Module } from '@nestjs/common';
+import { Module, Injectable, Inject } from '@nestjs/common';
 import {
   CognitoModule,
   getCognitoServiceToken,

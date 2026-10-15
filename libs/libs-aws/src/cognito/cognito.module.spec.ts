@@ -3,7 +3,11 @@ import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-
 import { CognitoModule } from './cognito.module';
 import { CognitoService } from './cognito.service';
 import { CognitoAuthService } from './cognito-auth.service';
-import { COGNITO_CLIENT } from './cognito.constants';
+import {
+  COGNITO_CLIENT,
+  getCognitoServiceToken,
+  getCognitoAuthServiceToken,
+} from './cognito.constants';
 
 describe('CognitoModule', () => {
   let moduleRef: TestingModule;
@@ -14,7 +18,7 @@ describe('CognitoModule', () => {
     }
   });
 
-  it('should initialize synchronously with forRoot', async () => {
+  it('should initialize synchronously with forRoot and register base token aliases', async () => {
     moduleRef = await Test.createTestingModule({
       imports: [
         CognitoModule.forRoot({
@@ -28,11 +32,15 @@ describe('CognitoModule', () => {
     const service = moduleRef.get<CognitoService>(CognitoService);
     const authService = moduleRef.get<CognitoAuthService>(CognitoAuthService);
     const client = moduleRef.get<CognitoIdentityProviderClient>(COGNITO_CLIENT);
+    const baseService = moduleRef.get<CognitoService>(getCognitoServiceToken());
+    const baseAuthService = moduleRef.get<CognitoAuthService>(getCognitoAuthServiceToken());
 
     expect(service).toBeDefined();
     expect(authService).toBeDefined();
     expect(client).toBeDefined();
     expect(client).toBeInstanceOf(CognitoIdentityProviderClient);
+    expect(baseService).toBe(service);
+    expect(baseAuthService).toBe(authService);
   });
 
   it('should initialize asynchronously with forRootAsync using useFactory', async () => {
@@ -105,5 +113,31 @@ describe('CognitoModule', () => {
         ],
       }).compile(),
     ).rejects.toThrow('userPoolId must be configured in CognitoModuleOptions');
+  });
+
+  it('should support multiple User Pool registrations with distinct instanceNames', async () => {
+    moduleRef = await Test.createTestingModule({
+      imports: [
+        CognitoModule.forRoot({
+          instanceName: 'PoolA',
+          region: 'us-east-1',
+          userPoolId: 'us-east-1_poolA',
+        }),
+        CognitoModule.forRootAsync({
+          instanceName: 'PoolB',
+          useFactory: () => ({
+            region: 'us-east-1',
+            userPoolId: 'us-east-1_poolB',
+          }),
+        }),
+      ],
+    }).compile();
+
+    const serviceA = moduleRef.get<CognitoService>(getCognitoServiceToken('PoolA'));
+    const serviceB = moduleRef.get<CognitoService>(getCognitoServiceToken('PoolB'));
+
+    expect(serviceA).toBeDefined();
+    expect(serviceB).toBeDefined();
+    expect(serviceA).not.toBe(serviceB);
   });
 });

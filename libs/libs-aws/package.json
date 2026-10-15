@@ -23,6 +23,7 @@
   "author": "New HROS Team",
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.500.0",
+    "@aws-sdk/types": "^3.500.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "rxjs": "^7.8.1"

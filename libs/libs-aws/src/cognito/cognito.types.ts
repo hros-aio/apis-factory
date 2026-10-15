@@ -20,6 +20,8 @@ export interface CognitoModuleOptions {
   clientConfig?: Partial<CognitoIdentityProviderClientConfig>;
   /** Optional instance identifier for multi-pool differentiation */
   instanceName?: string;
+  /** Optional flag indicating whether the App Client uses refresh token rotation */
+  refreshTokenRotation?: boolean;
 }
 
 export interface CognitoOptionsFactory {
@@ -41,6 +43,7 @@ export type CognitoUserStatus =
   | 'COMPROMISED'
   | 'RESET_REQUIRED'
   | 'FORCE_CHANGE_PASSWORD'
+  | 'EXTERNAL_PROVIDER'
   | 'UNKNOWN';
 
 export interface CognitoUserRecord {
@@ -122,6 +125,8 @@ export interface RefreshTokenInput {
   refreshToken: string;
   username?: string;
   clientMetadata?: Record<string, string>;
+  /** Optional override indicating whether to use Cognito's rotation-compatible refresh API */
+  refreshTokenRotation?: boolean;
 }
 
 export interface RespondToChallengeInput {

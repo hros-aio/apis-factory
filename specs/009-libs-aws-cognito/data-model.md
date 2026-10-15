@@ -45,13 +45,13 @@ Domain representation of a Cognito user returned from administrative operations.
 | `username` | `string` | Yes | Username or external identifier |
 | `attributes` | `Record<string, string>` | Yes | Normalized key-value map of user attributes (e.g., `email`, `sub`, `custom:tenant_code`) |
 | `enabled` | `boolean` | Yes | Whether the user account is active |
-| `userStatus` | `CognitoUserStatus` | Yes | Current lifecycle status (`UNCONFIRMED`, `CONFIRMED`, `ARCHIVED`, `COMPROMISED`, `RESET_REQUIRED`, `FORCE_CHANGE_PASSWORD`) |
+| `userStatus` | `CognitoUserStatus` | Yes | Current lifecycle status (`UNCONFIRMED`, `CONFIRMED`, `ARCHIVED`, `COMPROMISED`, `RESET_REQUIRED`, `FORCE_CHANGE_PASSWORD`, `EXTERNAL_PROVIDER`) |
 | `userCreateDate` | `Date` | No | User creation timestamp |
 | `userLastModifiedDate` | `Date` | No | Last update timestamp |
 
 ### `CognitoUserStatus`
 Enum / Union type:
-`'UNCONFIRMED' | 'CONFIRMED' | 'ARCHIVED' | 'COMPROMISED' | 'RESET_REQUIRED' | 'FORCE_CHANGE_PASSWORD' | 'UNKNOWN'`
+`'UNCONFIRMED' | 'CONFIRMED' | 'ARCHIVED' | 'COMPROMISED' | 'RESET_REQUIRED' | 'FORCE_CHANGE_PASSWORD' | 'EXTERNAL_PROVIDER' | 'UNKNOWN'`
 
 ### `PaginatedUserList`
 Result returned by `CognitoService.listUsers()`.

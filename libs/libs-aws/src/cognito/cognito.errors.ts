@@ -68,23 +68,23 @@ export class CognitoErrorMapper {
 
     switch (errorType) {
       case 'UserNotFoundException':
-        return new CognitoUserNotFoundException(awsError.message || 'User does not exist', error);
+        return new CognitoUserNotFoundException('User does not exist', error);
       case 'UsernameExistsException':
-        return new CognitoUserAlreadyExistsException(awsError.message || 'User already exists', error);
+        return new CognitoUserAlreadyExistsException('User already exists', error);
       case 'NotAuthorizedException':
-        return new CognitoNotAuthorizedException(awsError.message || 'Not authorized', error);
+        return new CognitoNotAuthorizedException('Not authorized', error);
       case 'InvalidPasswordException':
-        return new CognitoInvalidPasswordException(awsError.message || 'Password does not meet requirements', error);
+        return new CognitoInvalidPasswordException('Password does not meet requirements', error);
       case 'CodeMismatchException':
-        return new CognitoCodeMismatchException(awsError.message || 'Invalid verification code provided', error);
+        return new CognitoCodeMismatchException('Invalid verification code provided', error);
       case 'ExpiredCodeException':
-        return new CognitoCodeExpiredException(awsError.message || 'Verification code has expired', error);
+        return new CognitoCodeExpiredException('Verification code has expired', error);
       case 'PasswordResetRequiredException':
-        return new CognitoPasswordResetRequiredException(awsError.message || 'Password reset required for user', error);
+        return new CognitoPasswordResetRequiredException('Password reset required for user', error);
       case 'UserNotConfirmedException':
-        return new CognitoUserNotConfirmedException(awsError.message || 'User is not confirmed', error);
+        return new CognitoUserNotConfirmedException('User is not confirmed', error);
       default:
-        return new CognitoInternalException(awsError?.message || fallbackMessage, error);
+        return new CognitoInternalException(fallbackMessage || 'An unexpected Cognito error occurred', error);
     }
   }
 }
