@@ -24,8 +24,9 @@
       "@new-hros/libs-events": ["libs/libs-events/src"],
       "@new-hros/libs-sql": ["libs/libs-sql/src"],
       "@new-hros/libs-mongo": ["libs/libs-mongo/src"],
-      "@new-hros/libs-apis": ["libs/libs-apis/src"]
+      "@new-hros/libs-apis": ["libs/libs-apis/src"],
+      "@new-hros/libs-aws": ["libs/libs-aws/src"]
     }
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "specs"]
 }
